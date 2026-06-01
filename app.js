@@ -9,7 +9,7 @@ import { GoogleGenerativeAI } from 'https://esm.run/@google/generative-ai';
 /* ================================================================
    CONFIG & CONSTANTS
    ================================================================ */
-const API_KEY       = '';
+const API_KEY       = 'AQ.Ab8RN6LN2gzn9s06irdujsovd6v9H07FsBO3ZZkQG1m_3SQC5Q';
 const MODEL_NAME    = 'gemini-1.5-flash';
 const LS_KEY_CHATS  = 'novamind_chats';
 const LS_KEY_ACTIVE = 'novamind_active_chat';
