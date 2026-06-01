@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaMind AI — Intelligent Conversation</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'nova-bg':       '#0a0a14',
+            'nova-surface':  '#0f0f1e',
+            'nova-panel':    '#13132a',
+            'nova-border':   '#1e1e3a',
+            'nova-indigo':   '#6366f1',
+            'nova-violet':   '#8b5cf6',
+            'nova-cyan':     '#22d3ee',
+            'nova-text':     '#e2e8f0',
+            'nova-muted':    '#64748b',
+            'nova-user-bg':  '#1a1a3e',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-nova-bg text-nova-text" id="app-body">
+
+  <!-- ============================================================ -->
+  <!-- APP WRAPPER                                                   -->
+  <!-- ============================================================ -->
+  <div id="app-wrapper" class="flex h-screen w-screen overflow-hidden relative">
+
+    <!-- ========================================================== -->
+    <!-- SIDEBAR OVERLAY (mobile)                                   -->
+    <!-- ========================================================== -->
+    <div id="sidebar-overlay" class="sidebar-overlay hidden fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden"></div>
+
+    <!-- ========================================================== -->
+    <!-- LEFT SIDEBAR                                               -->
+    <!-- ========================================================== -->
+    <aside id="sidebar" class="sidebar flex flex-col z-30 w-72 flex-shrink-0 h-screen">
+
+      <!-- Sidebar Header / Logo -->
+      <div class="sidebar-header px-5 pt-6 pb-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="logo-orb" aria-hidden="true"></div>
+          <span class="logo-text">NovaMind</span>
+        </div>
+        <button id="sidebar-close-btn" class="icon-btn lg:hidden" aria-label="Close sidebar">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- New Chat Button -->
+      <div class="px-4 pb-4">
+        <button id="new-chat-btn" class="new-chat-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200" aria-label="Start a new chat">
+          <i data-lucide="plus" class="w-4 h-4 flex-shrink-0"></i>
+          <span>New Conversation</span>
+          <kbd class="ml-auto text-xs opacity-40 font-mono">⌘K</kbd>
+        </button>
+      </div>
+
+      <!-- Section Label -->
+      <div class="px-5 pb-2">
+        <p class="text-xs font-semibold uppercase tracking-widest text-nova-muted/60">Recent</p>
+      </div>
+
+      <!-- Chat History List -->
+      <nav id="chat-history-list" class="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-thin" aria-label="Chat history">
+        <!-- Dynamically populated by app.js -->
+        <div id="no-chats-placeholder" class="px-3 py-8 text-center text-nova-muted text-sm">
+          <i data-lucide="message-circle" class="w-8 h-8 mx-auto mb-3 opacity-30"></i>
+          <p class="opacity-50">No conversations yet</p>
+          <p class="opacity-30 text-xs mt-1">Start a new chat above</p>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer p-4 mt-auto border-t border-nova-border/50">
+        <div class="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition cursor-pointer">
+          <div class="avatar-circle flex-shrink-0" aria-hidden="true">
+            <i data-lucide="user" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">You</p>
+            <p class="text-xs text-nova-muted truncate">Free Plan</p>
+          </div>
+          <i data-lucide="settings" class="w-4 h-4 text-nova-muted hover:text-nova-indigo transition-colors cursor-pointer"></i>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========================================================== -->
+    <!-- MAIN CHAT WINDOW                                           -->
+    <!-- ========================================================== -->
+    <main id="main-window" class="main-window flex flex-col flex-1 h-screen overflow-hidden relative">
+
+      <!-- -------------------------------------------------------- -->
+      <!-- TOP HEADER BAR                                          -->
+      <!-- -------------------------------------------------------- -->
+      <header id="chat-header" class="chat-header flex items-center justify-between px-5 py-4 flex-shrink-0">
+
+        <!-- Left: Toggle + Chat Title -->
+        <div class="flex items-center gap-4 min-w-0">
+          <button id="sidebar-toggle-btn" class="icon-btn" aria-label="Toggle sidebar">
+            <i data-lucide="panel-left" class="w-5 h-5"></i>
+          </button>
+          <div class="min-w-0">
+            <h1 id="chat-title" class="chat-title-text truncate">New Conversation</h1>
+            <p id="chat-subtitle" class="chat-subtitle-text">gemini-1.5-flash · multimodal</p>
+          </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="clear-chat-btn" class="icon-btn" aria-label="Clear current chat" title="Clear chat">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+          <button class="icon-btn" aria-label="Share conversation" title="Share">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+          </button>
+          <div class="model-badge">
+            <i data-lucide="zap" class="w-3 h-3"></i>
+            <span>Flash 1.5</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- -------------------------------------------------------- -->
+      <!-- SCROLLABLE CHAT DISPLAY                                  -->
+      <!-- -------------------------------------------------------- -->
+      <div id="chat-display" class="chat-display flex-1 overflow-y-auto scrollbar-thin px-4 py-6 space-y-6" aria-live="polite" aria-label="Conversation">
+
+        <!-- Welcome Screen (shown when no messages) -->
+        <div id="welcome-screen" class="welcome-screen flex flex-col items-center justify-center h-full min-h-[60vh] text-center px-4">
+          <div class="welcome-orb-container mb-8" aria-hidden="true">
+            <div class="welcome-orb"></div>
+          </div>
+          <h2 class="welcome-heading mb-3">What can I help with?</h2>
+          <p class="welcome-subheading mb-10 max-w-md">
+            Ask me anything — from complex coding challenges to creative writing, data analysis, or casual conversation.
+          </p>
+          <!-- Suggestion Pills -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
+            <button class="suggestion-pill" data-prompt="Explain quantum computing in simple terms with an analogy">
+              <i data-lucide="atom" class="w-4 h-4 flex-shrink-0 text-nova-indigo"></i>
+              <span>Explain quantum computing simply</span>
+            </button>
+            <button class="suggestion-pill" data-prompt="Write a Python function to scrape and parse a website's headlines using BeautifulSoup">
+              <i data-lucide="code-2" class="w-4 h-4 flex-shrink-0 text-nova-violet"></i>
+              <span>Python web scraping code</span>
+            </button>
+            <button class="suggestion-pill" data-prompt="Help me brainstorm 10 creative names for a futuristic AI startup with a space theme">
+              <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0 text-nova-cyan"></i>
+              <span>Brainstorm startup names</span>
+            </button>
+            <button class="suggestion-pill" data-prompt="What are the key differences between REST and GraphQL APIs? When should I use each?">
+              <i data-lucide="git-branch" class="w-4 h-4 flex-shrink-0 text-nova-indigo"></i>
+              <span>REST vs GraphQL explained</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages will be dynamically injected here -->
+        <div id="messages-container" class="messages-container space-y-6 hidden"></div>
+
+        <!-- AI Thinking / Skeleton Loader -->
+        <div id="thinking-indicator" class="thinking-indicator hidden flex gap-4 px-2">
+          <div class="ai-avatar flex-shrink-0" aria-hidden="true">
+            <div class="ai-avatar-inner"></div>
+          </div>
+          <div class="thinking-bubbles">
+            <div class="thinking-label">NovaMind is thinking</div>
+            <div class="skeleton-lines mt-2">
+              <div class="skeleton-line" style="width: 75%"></div>
+              <div class="skeleton-line" style="width: 55%"></div>
+              <div class="skeleton-line" style="width: 85%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end #chat-display -->
+
+      <!-- -------------------------------------------------------- -->
+      <!-- BOTTOM INPUT CONSOLE                                     -->
+      <!-- -------------------------------------------------------- -->
+      <div id="input-console" class="input-console flex-shrink-0 px-4 pb-5 pt-3">
+
+        <!-- Image Preview Chip (appears on upload) -->
+        <div id="image-preview-bar" class="image-preview-bar hidden mb-3 px-2">
+          <div id="image-chip" class="image-chip inline-flex items-center gap-2">
+            <img id="image-preview-thumb" src="" alt="Uploaded preview" class="image-thumb" />
+            <span id="image-preview-name" class="text-xs text-nova-muted truncate max-w-[140px]">image.png</span>
+            <button id="remove-image-btn" class="remove-image-btn" aria-label="Remove image">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-box-wrapper">
+          <div class="input-box flex items-end gap-3 px-4 py-3">
+
+            <!-- Attachment Button -->
+            <div class="relative flex-shrink-0">
+              <button id="attach-btn" class="attach-btn" aria-label="Upload image">
+                <i data-lucide="paperclip" class="w-5 h-5"></i>
+              </button>
+              <input
+                type="file"
+                id="file-input"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="hidden"
+                aria-label="Upload image file"
+              />
+            </div>
+
+            <!-- Text Textarea -->
+            <textarea
+              id="message-input"
+              class="message-textarea flex-1"
+              placeholder="Message NovaMind..."
+              rows="1"
+              aria-label="Message input"
+              maxlength="8000"
+            ></textarea>
+
+            <!-- Send Button -->
+            <button id="send-btn" class="send-btn flex-shrink-0" aria-label="Send message" disabled>
+              <i data-lucide="arrow-up" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <p class="disclaimer-text text-center mt-3">
+          NovaMind can make mistakes. Verify important information.
+        </p>
+      </div><!-- end #input-console -->
+
+    </main><!-- end #main-window -->
+
+  </div><!-- end #app-wrapper -->
+
+  <!-- ============================================================ -->
+  <!-- TOAST NOTIFICATION                                           -->
+  <!-- ============================================================ -->
+  <div id="toast" class="toast hidden" role="alert" aria-live="assertive">
+    <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
+    <span id="toast-message">Message here</span>
+  </div>
+
+  <!-- Lucide icons init -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+  </script>
+
+  <!-- App Logic (ES Module) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
