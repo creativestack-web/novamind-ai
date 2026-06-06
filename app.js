@@ -1,977 +1,362 @@
-/**
- * app.js — NovaMind AI Core Logic
- * Multi-chat state, LocalStorage persistence, Gemini API (gemini-1.5-flash),
- * Image upload & base64 conversion, Markdown rendering, Auto-scroll.
- */
+/* =========================================================
+   NovaMind AI — app.js
+   Groq API Integration | CreativeStack
+   ========================================================= */
 
-import { GoogleGenerativeAI } from 'https://esm.run/@google/generative-ai';
+// ─── API Configuration ───────────────────────────────────
+const API_KEY   = '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';
+const API_URL   = 'https://api.groq.com/openai/v1/chat/completions';
+const AI_MODEL  = 'llama3-8b-8192';
 
-/* ================================================================
-   CONFIG & CONSTANTS
-   ================================================================ */
-const API_KEY       = '';
-const MODEL_NAME    = 'gemini-1.5-flash';
-const LS_KEY_CHATS  = 'novamind_chats';
-const LS_KEY_ACTIVE = 'novamind_active_chat';
+// ─── NovaMind System Persona ─────────────────────────────
+const SYSTEM_PROMPT = `You are NovaMind AI, an omniscient, hyper-intelligent assistant created by CreativeStack. You are the world's most capable AI assistant, combining deep expertise across all domains:
 
-/* ================================================================
-   GEMINI CLIENT
-   ================================================================ */
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+EDUCATION: You provide crystal-clear, engaging explanations for students from K-12 through postgraduate level. You break down complex topics with real-world analogies, step-by-step reasoning, and memorable examples. Subjects include Mathematics, Science, History, Literature, Economics, and more.
 
-/* ================================================================
-   APP STATE
-   ================================================================ */
-let state = {
-  chats: {},          // { [chatId]: { id, title, messages: [], createdAt } }
-  activeChatId: null,
-  uploadedImage: null, // { base64, mimeType, name, previewUrl }
-  isStreaming: false,
-};
+SOFTWARE ENGINEERING: You write clean, production-grade code in any language (Python, JavaScript, TypeScript, Go, Rust, Java, C++, SQL, and more). You debug issues methodically, design scalable architectures, and review code with senior engineer precision.
 
-/* ================================================================
-   DOM REFERENCES
-   ================================================================ */
-const dom = {
-  sidebar:            document.getElementById('sidebar'),
-  sidebarOverlay:     document.getElementById('sidebar-overlay'),
-  sidebarToggleBtn:   document.getElementById('sidebar-toggle-btn'),
-  sidebarCloseBtn:    document.getElementById('sidebar-close-btn'),
-  newChatBtn:         document.getElementById('new-chat-btn'),
-  chatHistoryList:    document.getElementById('chat-history-list'),
-  noChatsPlaceholder: document.getElementById('no-chats-placeholder'),
-  chatTitle:          document.getElementById('chat-title'),
-  chatSubtitle:       document.getElementById('chat-subtitle'),
-  clearChatBtn:       document.getElementById('clear-chat-btn'),
-  chatDisplay:        document.getElementById('chat-display'),
-  welcomeScreen:      document.getElementById('welcome-screen'),
-  messagesContainer:  document.getElementById('messages-container'),
-  thinkingIndicator:  document.getElementById('thinking-indicator'),
-  attachBtn:          document.getElementById('attach-btn'),
-  fileInput:          document.getElementById('file-input'),
-  messageInput:       document.getElementById('message-input'),
-  sendBtn:            document.getElementById('send-btn'),
-  imagePreviewBar:    document.getElementById('image-preview-bar'),
-  imageChip:          document.getElementById('image-chip'),
-  imagePreviewThumb:  document.getElementById('image-preview-thumb'),
-  imagePreviewName:   document.getElementById('image-preview-name'),
-  removeImageBtn:     document.getElementById('remove-image-btn'),
-  toast:              document.getElementById('toast'),
-  toastMessage:       document.getElementById('toast-message'),
-  suggestionPills:    document.querySelectorAll('.suggestion-pill'),
-};
+BUSINESS & STRATEGY: You think like a top-tier management consultant. You create business plans, market analyses, go-to-market strategies, investor narratives, financial projections, and executive communications with clarity and impact.
 
-/* ================================================================
-   UTILS
-   ================================================================ */
-/** Generate a unique ID */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+CONTENT & WRITING: You craft compelling copy, SEO-optimized articles, essays, scripts, emails, and creative writing with expert-level quality.
 
-/** Get current timestamp formatted */
-function timestamp() {
-  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+CORE TRAITS:
+- Always highly detailed, accurate, and structured
+- Use markdown formatting (headers, bullet points, code blocks) where appropriate for clarity
+- Never give vague or generic answers — always go deep and specific
+- Acknowledge if something is outside your knowledge rather than guess
+- Be warm, professional, and encouraging in tone
+- If asked who created you: "I am NovaMind AI, created by CreativeStack."
+- If asked what model powers you: you may say you are powered by advanced AI infrastructure`;
 
-/** Truncate text to N words */
-function truncateWords(text, n = 6) {
-  const words = text.trim().split(/\s+/);
-  return words.slice(0, n).join(' ') + (words.length > n ? '…' : '');
-}
+// ─── Conversation History ─────────────────────────────────
+let conversationHistory = [];
+let isTyping = false;
 
-/** Show toast notification */
-let toastTimer = null;
-function showToast(message, duration = 2500) {
-  dom.toastMessage.textContent = message;
-  dom.toast.classList.remove('hidden');
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => dom.toast.classList.add('hidden'), duration);
-}
+// ─── DOM References ───────────────────────────────────────
+const chatWindow   = document.getElementById('chatWindow');
+const dashboard    = document.getElementById('dashboard');
+const userInput    = document.getElementById('userInput');
+const sendBtn      = document.getElementById('sendBtn');
 
-/** Ripple click effect */
-function addRipple(element, event) {
-  const circle = document.createElement('span');
-  circle.classList.add('ripple-circle');
-  const rect = element.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height);
-  circle.style.width  = circle.style.height = `${size}px`;
-  circle.style.left = `${event.clientX - rect.left - size / 2}px`;
-  circle.style.top  = `${event.clientY - rect.top  - size / 2}px`;
-  element.appendChild(circle);
-  circle.addEventListener('animationend', () => circle.remove());
-}
-
-/** Escape HTML to prevent XSS in code blocks */
+// ─── Utility: Escape HTML ─────────────────────────────────
 function escapeHtml(text) {
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/>/g, '&gt;');
 }
 
-/* ================================================================
-   MARKDOWN RENDERER
-   Handles: headings, bold, italic, code blocks, inline code,
-   blockquotes, lists, tables, links, horizontal rules.
-   ================================================================ */
+// ─── Utility: Render Markdown-ish formatting ──────────────
 function renderMarkdown(text) {
-  let html = text;
-
-  // Protect code blocks first (replace placeholders)
+  // Protect code blocks first
   const codeBlocks = [];
-  html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
     const idx = codeBlocks.length;
-    const language = lang || 'code';
-    const escapedCode = escapeHtml(code.trim());
-    codeBlocks.push(`
-      <div class="code-block-wrapper">
-        <div class="code-block-header">
-          <span class="code-lang-label">${language}</span>
-          <button class="code-copy-btn" onclick="copyCode(this)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            Copy
-          </button>
-        </div>
-        <pre><code>${escapedCode}</code></pre>
-      </div>`);
+    codeBlocks.push(`<pre><code class="lang-${escapeHtml(lang)}">${escapeHtml(code.trim())}</code></pre>`);
     return `%%CODEBLOCK_${idx}%%`;
   });
 
   // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/`([^`]+)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
 
-  // Headings
-  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
-  // Bold & Italic
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  html = html.replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>');
-  html = html.replace(/\*(.+?)\*/g,         '<em>$1</em>');
-  html = html.replace(/__(.+?)__/g,          '<strong>$1</strong>');
-  html = html.replace(/_(.+?)_/g,            '<em>$1</em>');
+  // Italic
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-  // Blockquotes
-  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+  // Headers
+  text = text.replace(/^### (.+)$/gm, '<h3 style="font-family:var(--font-display);font-size:15px;font-weight:700;margin:14px 0 6px;color:var(--text-primary);">$1</h3>');
+  text = text.replace(/^## (.+)$/gm, '<h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin:16px 0 8px;color:var(--text-primary);">$1</h2>');
+  text = text.replace(/^# (.+)$/gm, '<h1 style="font-family:var(--font-display);font-size:20px;font-weight:800;margin:18px 0 10px;color:var(--text-primary);">$1</h1>');
 
-  // Horizontal rules
-  html = html.replace(/^(-{3,}|\*{3,}|_{3,})$/gm, '<hr>');
+  // Bullet lists
+  text = text.replace(/^\s*[-*] (.+)$/gm, '<li style="margin:4px 0 4px 16px;list-style:disc;">$1</li>');
+  text = text.replace(/(<li.*<\/li>\n?)+/g, m => `<ul style="margin:8px 0;">${m}</ul>`);
 
-  // Unordered lists (- or *)
-  html = html.replace(/^[-*+] (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>[\s\S]*?<\/li>)(\n(?!<li>)|$)/g, '<ul>$1</ul>$2');
+  // Numbered lists
+  text = text.replace(/^\d+\. (.+)$/gm, '<li style="margin:4px 0 4px 16px;list-style:decimal;">$1</li>');
 
-  // Ordered lists
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-
-  // Simple table support
-  html = html.replace(/^\|(.+)\|$/gm, (line) => {
-    const cells = line.split('|').slice(1, -1).map(c => c.trim());
-    return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
-  });
-  // Convert separator rows (| --- | --- |)
-  html = html.replace(/<tr>(<td>[-:]+<\/td>)+<\/tr>/g, '');
-  // Wrap tables
-  if (html.includes('<tr>')) {
-    html = html.replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, (match) => {
-      const rows = match.trim().split('\n').filter(Boolean);
-      if (!rows.length) return match;
-      const header = rows[0].replace(/<td>/g, '<th>').replace(/<\/td>/g, '</th>');
-      const body   = rows.slice(1).join('\n');
-      return `<table><thead>${header}</thead><tbody>${body}</tbody></table>`;
-    });
-  }
-
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-
-  // Paragraphs: wrap double newlines
-  html = html.replace(/\n\n+/g, '</p><p>');
-  html = '<p>' + html + '</p>';
-
-  // Single newlines → <br> inside paragraphs
-  html = html.replace(/(?<!>)\n(?!<)/g, '<br>');
-
-  // Remove empty paragraphs
-  html = html.replace(/<p>\s*<\/p>/g, '');
+  // Line breaks (double newline → paragraph break)
+  text = text.replace(/\n\n/g, '<br><br>');
+  text = text.replace(/\n/g, '<br>');
 
   // Restore code blocks
-  codeBlocks.forEach((block, i) => {
-    html = html.replace(`%%CODEBLOCK_${i}%%`, block);
+  text = text.replace(/%%CODEBLOCK_(\d+)%%/g, (_, idx) => codeBlocks[parseInt(idx)]);
+
+  return text;
+}
+
+// ─── Show Dashboard or Chat ───────────────────────────────
+function showDashboard() {
+  dashboard.style.display = 'flex';
+  chatWindow.style.display = 'none';
+  chatWindow.classList.remove('visible');
+}
+
+function showChat() {
+  dashboard.style.display = 'none';
+  chatWindow.style.display = 'flex';
+  chatWindow.classList.add('visible');
+}
+
+// ─── Append Message to Chat ───────────────────────────────
+function appendMessage(role, content) {
+  const isUser = role === 'user';
+
+  const msg = document.createElement('div');
+  msg.classList.add('msg', isUser ? 'user' : 'ai');
+
+  const avatar = document.createElement('div');
+  avatar.classList.add('msg-avatar');
+  avatar.textContent = isUser ? 'You' : 'NM';
+
+  const bubble = document.createElement('div');
+  bubble.classList.add('msg-bubble');
+
+  if (isUser) {
+    bubble.textContent = content;
+  } else {
+    bubble.innerHTML = renderMarkdown(content);
+  }
+
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatWindow.appendChild(msg);
+
+  // Scroll to bottom
+  requestAnimationFrame(() => {
+    chatWindow.scrollTop = chatWindow.scrollHeight;
   });
 
-  return html;
+  return bubble;
 }
 
-/** Global code copy handler (attached to window for onclick access) */
-window.copyCode = async function(btn) {
-  const pre  = btn.closest('.code-block-wrapper').querySelector('pre code');
-  const code = pre.textContent;
-  try {
-    await navigator.clipboard.writeText(code);
-    const orig = btn.innerHTML;
-    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
-    btn.style.color = '#22d3ee';
-    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
-  } catch {
-    showToast('Could not copy to clipboard.');
-  }
-};
+// ─── Typing Indicator ─────────────────────────────────────
+function showTypingIndicator() {
+  const msg = document.createElement('div');
+  msg.classList.add('msg', 'ai');
+  msg.id = 'typingMsg';
 
-/* ================================================================
-   LOCAL STORAGE
-   ================================================================ */
-function saveToLocalStorage() {
-  try {
-    localStorage.setItem(LS_KEY_CHATS,  JSON.stringify(state.chats));
-    localStorage.setItem(LS_KEY_ACTIVE, state.activeChatId || '');
-  } catch (e) {
-    console.warn('LocalStorage write failed:', e);
-  }
+  const avatar = document.createElement('div');
+  avatar.classList.add('msg-avatar');
+  avatar.textContent = 'NM';
+
+  const bubble = document.createElement('div');
+  bubble.classList.add('msg-bubble');
+
+  const indicator = document.createElement('div');
+  indicator.classList.add('typing-indicator');
+  indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+
+  bubble.appendChild(indicator);
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatWindow.appendChild(msg);
+
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function loadFromLocalStorage() {
-  try {
-    const chatsJSON  = localStorage.getItem(LS_KEY_CHATS);
-    const activeChatId = localStorage.getItem(LS_KEY_ACTIVE);
-    if (chatsJSON) {
-      state.chats = JSON.parse(chatsJSON);
-    }
-    if (activeChatId && state.chats[activeChatId]) {
-      state.activeChatId = activeChatId;
-    }
-  } catch (e) {
-    console.warn('LocalStorage read failed:', e);
-    state.chats = {};
-    state.activeChatId = null;
-  }
+function removeTypingIndicator() {
+  const el = document.getElementById('typingMsg');
+  if (el) el.remove();
 }
 
-/* ================================================================
-   CHAT MANAGEMENT
-   ================================================================ */
-function createNewChat() {
-  const id = uid();
-  state.chats[id] = {
-    id,
-    title:     'New Conversation',
-    messages:  [],
-    createdAt: Date.now(),
-  };
-  state.activeChatId = id;
-  saveToLocalStorage();
-  return id;
-}
+// ─── Show Error in Chat ───────────────────────────────────
+function showError(title, detail) {
+  removeTypingIndicator();
 
-function setActiveChat(chatId) {
-  state.activeChatId = chatId;
-  saveToLocalStorage();
-}
+  const msg = document.createElement('div');
+  msg.classList.add('msg', 'ai');
 
-function deleteChat(chatId) {
-  const wasActive = (state.activeChatId === chatId);
-  delete state.chats[chatId];
-  if (wasActive) {
-    const remaining = Object.keys(state.chats);
-    state.activeChatId = remaining.length > 0 ? remaining[remaining.length - 1] : null;
-  }
-  saveToLocalStorage();
-}
+  const avatar = document.createElement('div');
+  avatar.classList.add('msg-avatar');
+  avatar.textContent = 'NM';
 
-function getActiveChat() {
-  if (!state.activeChatId || !state.chats[state.activeChatId]) return null;
-  return state.chats[state.activeChatId];
-}
-
-function addMessageToChat(chatId, role, text, imageMeta = null) {
-  if (!state.chats[chatId]) return;
-  const msg = {
-    id:        uid(),
-    role,
-    text,
-    imageMeta, // { previewUrl, name } or null
-    timestamp: timestamp(),
-  };
-  state.chats[chatId].messages.push(msg);
-
-  // Auto-title the chat from first user message
-  if (role === 'user' && state.chats[chatId].messages.filter(m => m.role === 'user').length === 1) {
-    state.chats[chatId].title = truncateWords(text || 'Image conversation', 6);
-  }
-
-  saveToLocalStorage();
-  return msg;
-}
-
-/* ================================================================
-   SIDEBAR RENDERING
-   ================================================================ */
-function renderSidebar() {
-  // Remove all history items (keep placeholder in DOM but manage visibility)
-  const items = dom.chatHistoryList.querySelectorAll('.chat-history-item');
-  items.forEach(el => el.remove());
-
-  const chatIds = Object.keys(state.chats).sort((a, b) => {
-    return (state.chats[b].createdAt || 0) - (state.chats[a].createdAt || 0);
-  });
-
-  if (chatIds.length === 0) {
-    dom.noChatsPlaceholder.classList.remove('hidden');
-    // re-render icons
-    lucide.createIcons({ nodes: [dom.noChatsPlaceholder] });
-    return;
-  }
-
-  dom.noChatsPlaceholder.classList.add('hidden');
-
-  chatIds.forEach(chatId => {
-    const chat = state.chats[chatId];
-    const isActive = chatId === state.activeChatId;
-    const item = document.createElement('div');
-    item.className = `chat-history-item${isActive ? ' active' : ''}`;
-    item.dataset.chatId = chatId;
-    item.setAttribute('role', 'button');
-    item.setAttribute('tabindex', '0');
-    item.setAttribute('aria-label', `Open chat: ${chat.title}`);
-    item.innerHTML = `
-      <i data-lucide="message-square" class="item-icon w-3.5 h-3.5 flex-shrink-0"></i>
-      <span class="item-title">${escapeHtml(chat.title)}</span>
-      <button class="item-delete" data-chat-id="${chatId}" aria-label="Delete chat" title="Delete">
-        <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
-      </button>
-    `;
-    dom.chatHistoryList.insertBefore(item, dom.noChatsPlaceholder);
-    lucide.createIcons({ nodes: [item] });
-
-    // Click to open chat
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.item-delete')) return;
-      switchToChat(chatId);
-      closeMobileSidebar();
-    });
-
-    // Keyboard open
-    item.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        switchToChat(chatId);
-        closeMobileSidebar();
-      }
-    });
-
-    // Delete button
-    item.querySelector('.item-delete').addEventListener('click', (e) => {
-      e.stopPropagation();
-      handleDeleteChat(chatId);
-    });
-  });
-}
-
-/* ================================================================
-   MESSAGE RENDERING
-   ================================================================ */
-function renderMessages() {
-  const chat = getActiveChat();
-
-  if (!chat || chat.messages.length === 0) {
-    showWelcomeScreen();
-    updateChatHeader('New Conversation');
-    return;
-  }
-
-  hideWelcomeScreen();
-  dom.messagesContainer.innerHTML = '';
-
-  chat.messages.forEach(msg => {
-    const el = buildMessageElement(msg);
-    dom.messagesContainer.appendChild(el);
-  });
-
-  // Re-init icons in messages
-  lucide.createIcons({ nodes: [dom.messagesContainer] });
-  scrollToBottom();
-}
-
-function buildMessageElement(msg) {
-  const isUser = msg.role === 'user';
-  const row = document.createElement('div');
-  row.className = `message-row ${isUser ? 'user-row' : 'ai-row'}`;
-  row.dataset.messageId = msg.id;
-
-  // Avatar HTML
-  const avatarHtml = isUser
-    ? `<div class="user-avatar">Y</div>`
-    : `<div class="ai-avatar"><div class="ai-avatar-inner"></div></div>`;
-
-  // Image HTML (if user uploaded one with this message)
-  let imageHtml = '';
-  if (msg.imageMeta && msg.imageMeta.previewUrl) {
-    imageHtml = `<img src="${msg.imageMeta.previewUrl}" alt="Uploaded: ${escapeHtml(msg.imageMeta.name || 'image')}" class="bubble-image" />`;
-  }
-
-  // Text content
-  const bubbleContent = isUser
-    ? `<div class="bubble-text">${imageHtml}${escapeHtml(msg.text).replace(/\n/g, '<br>')}</div>`
-    : `<div class="bubble-text">${imageHtml}${renderMarkdown(msg.text)}</div>`;
-
-  // Action buttons for AI
-  const actionsHtml = isUser ? '' : `
-    <div class="bubble-actions">
-      <button class="bubble-action-btn" onclick="copyBubbleText(this)" title="Copy response">
-        <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy
-      </button>
-    </div>`;
-
-  row.innerHTML = `
-    ${avatarHtml}
-    <div class="bubble-content">
-      <div class="bubble-meta">${isUser ? 'You' : 'NovaMind'} · ${msg.timestamp || ''}</div>
-      <div class="bubble ${isUser ? 'user-bubble' : 'ai-bubble'}">${bubbleContent}</div>
-      ${actionsHtml}
+  const bubble = document.createElement('div');
+  bubble.classList.add('msg-bubble', 'error-bubble');
+  bubble.innerHTML = `
+    <div>
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16" style="flex-shrink:0;margin-top:2px;">
+        <circle cx="8" cy="8" r="7" stroke="#ff7070" stroke-width="1.4"/>
+        <path d="M8 5v4M8 11v.5" stroke="#ff7070" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <strong>${escapeHtml(title)}</strong>
+      ${escapeHtml(detail)}
     </div>
   `;
 
-  return row;
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  chatWindow.appendChild(msg);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-/** Copy AI bubble text to clipboard */
-window.copyBubbleText = async function(btn) {
-  const bubble = btn.closest('.bubble-content').querySelector('.bubble-text');
-  const text = bubble.innerText;
-  try {
-    await navigator.clipboard.writeText(text);
-    const orig = btn.innerHTML;
-    btn.innerHTML = `<i data-lucide="check" style="width:12px;height:12px;"></i> Copied!`;
-    btn.style.color = '#22d3ee';
-    lucide.createIcons({ nodes: [btn] });
-    setTimeout(() => {
-      btn.innerHTML = orig;
-      btn.style.color = '';
-      lucide.createIcons({ nodes: [btn] });
-    }, 2000);
-  } catch {
-    showToast('Could not copy text.');
-  }
-};
-
-/* ================================================================
-   WELCOME SCREEN & HEADER
-   ================================================================ */
-function showWelcomeScreen() {
-  dom.welcomeScreen.classList.remove('hidden');
-  dom.messagesContainer.classList.add('hidden');
-  dom.chatDisplay.classList.remove('has-messages');
-}
-
-function hideWelcomeScreen() {
-  dom.welcomeScreen.classList.add('hidden');
-  dom.messagesContainer.classList.remove('hidden');
-  dom.chatDisplay.classList.add('has-messages');
-}
-
-function updateChatHeader(title) {
-  dom.chatTitle.textContent = title || 'New Conversation';
-}
-
-/* ================================================================
-   SWITCH CHAT
-   ================================================================ */
-function switchToChat(chatId) {
-  if (!state.chats[chatId]) return;
-  setActiveChat(chatId);
-  clearImageUpload();
-  renderMessages();
-  renderSidebar();
-  updateChatHeader(state.chats[chatId].title);
-}
-
-/* ================================================================
-   DELETE CHAT
-   ================================================================ */
-function handleDeleteChat(chatId) {
-  deleteChat(chatId);
-  if (state.activeChatId) {
-    switchToChat(state.activeChatId);
-  } else {
-    // No chats left
-    dom.messagesContainer.innerHTML = '';
-    showWelcomeScreen();
-    updateChatHeader('New Conversation');
-  }
-  renderSidebar();
-  showToast('Conversation deleted');
-}
-
-/* ================================================================
-   NEW CHAT
-   ================================================================ */
-function handleNewChat() {
-  const chatId = createNewChat();
-  switchToChat(chatId);
-  dom.messageInput.focus();
-}
-
-/* ================================================================
-   CLEAR CURRENT CHAT
-   ================================================================ */
-function handleClearChat() {
-  const chat = getActiveChat();
-  if (!chat || chat.messages.length === 0) {
-    showToast('Nothing to clear');
-    return;
-  }
-  chat.messages = [];
-  chat.title = 'New Conversation';
-  saveToLocalStorage();
-  renderMessages();
-  renderSidebar();
-  updateChatHeader('New Conversation');
-  showToast('Chat cleared');
-}
-
-/* ================================================================
-   IMAGE UPLOAD & BASE64
-   ================================================================ */
-dom.attachBtn.addEventListener('click', () => dom.fileInput.click());
-
-dom.fileInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // Validate
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  if (!allowed.includes(file.type)) {
-    showToast('Only JPG, PNG, WEBP, GIF images are supported.');
-    dom.fileInput.value = '';
-    return;
-  }
-  if (file.size > 10 * 1024 * 1024) { // 10MB limit
-    showToast('Image must be smaller than 10 MB.');
-    dom.fileInput.value = '';
-    return;
-  }
-
-  try {
-    const { base64, previewUrl } = await fileToBase64(file);
-    state.uploadedImage = {
-      base64,
-      mimeType:   file.type,
-      name:       file.name,
-      previewUrl,
-    };
-    showImagePreview(previewUrl, file.name);
-  } catch (err) {
-    console.error('Image read error:', err);
-    showToast('Failed to read image file.');
-  }
-  dom.fileInput.value = '';
-});
-
-/** Convert File to base64 + object URL */
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => {
-      // reader.result is "data:<mime>;base64,<data>"
-      const base64 = reader.result.split(',')[1];
-      const previewUrl = URL.createObjectURL(file);
-      resolve({ base64, previewUrl });
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
+// ─── Call Groq API ────────────────────────────────────────
+async function callGroqAPI(messages) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages,
+      ],
+      temperature: 0.75,
+      max_tokens: 2048,
+      stream: false,
+    }),
   });
-}
 
-function showImagePreview(previewUrl, name) {
-  dom.imagePreviewThumb.src = previewUrl;
-  dom.imagePreviewName.textContent = name;
-  dom.imagePreviewBar.classList.remove('hidden');
-}
-
-function clearImageUpload() {
-  if (state.uploadedImage?.previewUrl) {
-    URL.revokeObjectURL(state.uploadedImage.previewUrl);
-  }
-  state.uploadedImage = null;
-  dom.imagePreviewBar.classList.add('hidden');
-  dom.imagePreviewThumb.src = '';
-  dom.imagePreviewName.textContent = '';
-  dom.fileInput.value = '';
-}
-
-dom.removeImageBtn.addEventListener('click', () => {
-  clearImageUpload();
-  showToast('Image removed');
-});
-
-/* ================================================================
-   TEXTAREA AUTO-RESIZE & SEND BUTTON STATE
-   ================================================================ */
-dom.messageInput.addEventListener('input', () => {
-  // Auto-resize
-  dom.messageInput.style.height = 'auto';
-  dom.messageInput.style.height = Math.min(dom.messageInput.scrollHeight, 200) + 'px';
-  // Enable/disable send
-  updateSendButton();
-});
-
-dom.messageInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    if (!dom.sendBtn.disabled) handleSend();
-  }
-});
-
-function updateSendButton() {
-  const hasText  = dom.messageInput.value.trim().length > 0;
-  const hasImage = !!state.uploadedImage;
-  dom.sendBtn.disabled = (!hasText && !hasImage) || state.isStreaming;
-}
-
-/* ================================================================
-   SEND MESSAGE
-   ================================================================ */
-dom.sendBtn.addEventListener('click', handleSend);
-
-async function handleSend() {
-  if (state.isStreaming) return;
-
-  const text       = dom.messageInput.value.trim();
-  const imageMeta  = state.uploadedImage;
-
-  if (!text && !imageMeta) return;
-
-  // Ensure there's an active chat
-  if (!state.activeChatId || !state.chats[state.activeChatId]) {
-    createNewChat();
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    const errMsg = errBody?.error?.message || `HTTP ${response.status}`;
+    throw new Error(errMsg);
   }
 
-  const chatId = state.activeChatId;
+  const data = await response.json();
+  const reply = data?.choices?.[0]?.message?.content;
+
+  if (!reply) throw new Error('Empty response received from AI.');
+  return reply;
+}
+
+// ─── Main Send Logic ──────────────────────────────────────
+async function sendMessage() {
+  if (isTyping) return;
+
+  const rawText = userInput.value.trim();
+  if (!rawText) return;
+
+  // API key guard
+  if (!API_KEY || API_KEY === 'YOUR_GROQ_API_KEY_HERE') {
+    showChat();
+    showError(
+      'API Key Not Configured',
+      'Please open app.js and replace "YOUR_GROQ_API_KEY_HERE" with your actual Groq API key. Get one free at console.groq.com.'
+    );
+    return;
+  }
+
+  // Switch to chat view
+  showChat();
+
+  // Append user message
+  appendMessage('user', rawText);
+  conversationHistory.push({ role: 'user', content: rawText });
 
   // Clear input
-  dom.messageInput.value = '';
-  dom.messageInput.style.height = 'auto';
-  updateSendButton();
+  userInput.value = '';
+  autoResize();
 
-  // Preserve image preview data before clearing
-  const sentImage = imageMeta
-    ? { previewUrl: imageMeta.previewUrl, name: imageMeta.name, base64: imageMeta.base64, mimeType: imageMeta.mimeType }
-    : null;
+  // Lock UI
+  isTyping = true;
+  sendBtn.disabled = true;
 
-  // Clear image chip
-  if (imageMeta) clearImageUpload();
-
-  // Add user message to state
-  const userMsg = addMessageToChat(chatId, 'user', text || '📎 Image', sentImage
-    ? { previewUrl: sentImage.previewUrl, name: sentImage.name }
-    : null);
-
-  // Show message
-  hideWelcomeScreen();
-  const userEl = buildMessageElement(userMsg);
-  dom.messagesContainer.appendChild(userEl);
-  lucide.createIcons({ nodes: [userEl] });
-  scrollToBottom();
-
-  // Update header / sidebar title
-  updateChatHeader(state.chats[chatId].title);
-  renderSidebar();
-
-  // Show thinking indicator
-  showThinking();
-  state.isStreaming = true;
-  updateSendButton();
+  // Show typing indicator
+  showTypingIndicator();
 
   try {
-    // Build Gemini request parts
-    const parts = [];
-
-    if (sentImage) {
-      parts.push({
-        inlineData: {
-          mimeType: sentImage.mimeType,
-          data:     sentImage.base64,
-        },
-      });
-    }
-
-    if (text) {
-      parts.push({ text });
-    } else if (!sentImage) {
-      parts.push({ text: 'Hello' });
-    }
-
-    // Build conversation history for multi-turn context
-    const history = buildGeminiHistory(chatId, userMsg.id);
-
-    let aiResponseText = '';
-
-    if (history.length > 0) {
-      // Multi-turn with history
-      const chat = model.startChat({
-        history,
-        generationConfig: {
-          maxOutputTokens: 4096,
-          temperature:     0.85,
-          topP:            0.95,
-        },
-      });
-
-      // Build content for current message
-      const currentContent = parts.length > 0 ? parts : [{ text: '' }];
-      const result = await chat.sendMessageStream(currentContent);
-
-      // Stream output
-      const aiEl = appendStreamingBubble();
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        aiResponseText += chunkText;
-        updateStreamingBubble(aiEl, aiResponseText);
-      }
-      finalizeStreamingBubble(aiEl);
-    } else {
-      // First message (no history)
-      const result = await model.generateContentStream(parts.length > 1 ? parts : (parts[0] ? [parts[0]] : [{ text: '' }]));
-
-      const aiEl = appendStreamingBubble();
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        aiResponseText += chunkText;
-        updateStreamingBubble(aiEl, aiResponseText);
-      }
-      finalizeStreamingBubble(aiEl);
-    }
-
-    // Persist AI response
-    addMessageToChat(chatId, 'assistant', aiResponseText);
-    renderSidebar();
-
+    const reply = await callGroqAPI(conversationHistory);
+    removeTypingIndicator();
+    appendMessage('ai', reply);
+    conversationHistory.push({ role: 'assistant', content: reply });
   } catch (err) {
-    console.error('Gemini API error:', err);
-    hideThinking();
-    const errorText = extractErrorMessage(err);
-    appendErrorBubble(errorText);
-    addMessageToChat(chatId, 'assistant', `⚠️ ${errorText}`);
+    showError('NovaMind AI encountered an error', err.message);
   } finally {
-    state.isStreaming = false;
-    updateSendButton();
-    hideThinking();
+    isTyping = false;
+    sendBtn.disabled = false;
+    userInput.focus();
   }
 }
 
-/** Build Gemini-compatible history array (exclude the latest user message) */
-function buildGeminiHistory(chatId, latestUserMsgId) {
-  const chat = state.chats[chatId];
-  if (!chat || chat.messages.length < 2) return [];
-
-  // All messages except the very last one (which we're sending now)
-  const prior = chat.messages.filter(m => m.id !== latestUserMsgId);
-
-  return prior.map(msg => ({
-    role:  msg.role === 'user' ? 'user' : 'model',
-    parts: [{ text: msg.text || '' }],
-  }));
+// ─── Clear Chat ───────────────────────────────────────────
+function clearChat() {
+  conversationHistory = [];
+  chatWindow.innerHTML = '';
+  showDashboard();
+  userInput.value = '';
+  autoResize();
 }
 
-/* ================================================================
-   STREAMING BUBBLE HELPERS
-   ================================================================ */
-function showThinking() {
-  dom.thinkingIndicator.classList.remove('hidden');
-  scrollToBottom();
+// ─── Insert Example Prompt ────────────────────────────────
+function insertPrompt(text) {
+  userInput.value = text;
+  autoResize();
+  userInput.focus();
+  // Auto-send on card click
+  sendMessage();
 }
 
-function hideThinking() {
-  dom.thinkingIndicator.classList.add('hidden');
+// ─── Textarea Auto-Resize ─────────────────────────────────
+function autoResize() {
+  userInput.style.height = 'auto';
+  userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
 }
 
-function appendStreamingBubble() {
-  hideThinking();
+// ─── Page Navigation ──────────────────────────────────────
+function showPage(pageId) {
+  // Deactivate all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
-  const row = document.createElement('div');
-  row.className = 'message-row ai-row';
+  // Activate target
+  const targetPage = document.getElementById('page-' + pageId);
+  if (targetPage) targetPage.classList.add('active');
 
-  row.innerHTML = `
-    <div class="ai-avatar"><div class="ai-avatar-inner"></div></div>
-    <div class="bubble-content">
-      <div class="bubble-meta">NovaMind · ${timestamp()}</div>
-      <div class="bubble ai-bubble">
-        <div class="bubble-text streaming-text"></div>
-      </div>
-      <div class="bubble-actions">
-        <button class="bubble-action-btn" onclick="copyBubbleText(this)" title="Copy response">
-          <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy
-        </button>
-      </div>
-    </div>
-  `;
+  // Highlight nav link
+  const targetLink = document.querySelector(`[data-page="${pageId}"]`);
+  if (targetLink) targetLink.classList.add('active');
 
-  dom.messagesContainer.appendChild(row);
-  lucide.createIcons({ nodes: [row] });
-  scrollToBottom();
-  return row;
+  // Show/hide prompt bar for chat only
+  const promptBar = document.querySelector('.prompt-bar');
+  promptBar.style.display = pageId === 'chat' ? '' : 'none';
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
-function updateStreamingBubble(rowEl, text) {
-  const textEl = rowEl.querySelector('.streaming-text');
-  if (textEl) {
-    textEl.innerHTML = renderMarkdown(text);
-    textEl.classList.add('streaming-cursor');
-  }
-  scrollToBottom();
+// ─── Mobile Sidebar ───────────────────────────────────────
+function toggleSidebar() {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const burger   = document.getElementById('burgerBtn');
+  const isOpen   = sidebar.classList.toggle('open');
+  overlay.classList.toggle('open', isOpen);
+  burger.setAttribute('aria-expanded', isOpen);
 }
 
-function finalizeStreamingBubble(rowEl) {
-  const textEl = rowEl.querySelector('.streaming-text');
-  if (textEl) {
-    textEl.classList.remove('streaming-cursor');
-  }
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.getElementById('burgerBtn').setAttribute('aria-expanded', 'false');
 }
 
-function appendErrorBubble(message) {
-  const row = document.createElement('div');
-  row.className = 'message-row ai-row';
-  row.innerHTML = `
-    <div class="ai-avatar"><div class="ai-avatar-inner"></div></div>
-    <div class="bubble-content">
-      <div class="bubble-meta">NovaMind · ${timestamp()}</div>
-      <div class="bubble ai-bubble" style="border-color: rgba(239,68,68,0.3);">
-        <div class="bubble-text" style="color: #fca5a5;">
-          <p>⚠️ ${escapeHtml(message)}</p>
-          <p style="font-size:0.8rem;opacity:0.7;margin-top:0.5rem;">Please check your API key or try again.</p>
-        </div>
-      </div>
-    </div>
-  `;
-  dom.messagesContainer.appendChild(row);
-  scrollToBottom();
-}
+// ─── Event Listeners ─────────────────────────────────────
+userInput.addEventListener('input', autoResize);
 
-function extractErrorMessage(err) {
-  if (err?.message) {
-    if (err.message.includes('API_KEY')) return 'Invalid API key. Please check your configuration.';
-    if (err.message.includes('quota'))   return 'API quota exceeded. Please try again later.';
-    if (err.message.includes('network')) return 'Network error. Please check your connection.';
-    return err.message.slice(0, 120);
-  }
-  return 'An unexpected error occurred.';
-}
-
-/* ================================================================
-   AUTO-SCROLL
-   ================================================================ */
-function scrollToBottom(smooth = true) {
-  requestAnimationFrame(() => {
-    dom.chatDisplay.scrollTo({
-      top:      dom.chatDisplay.scrollHeight,
-      behavior: smooth ? 'smooth' : 'instant',
-    });
-  });
-}
-
-/* ================================================================
-   SIDEBAR TOGGLE
-   ================================================================ */
-dom.sidebarToggleBtn.addEventListener('click', () => {
-  const isMobile = window.innerWidth < 1024;
-  if (isMobile) {
-    openMobileSidebar();
-  } else {
-    dom.sidebar.classList.toggle('collapsed');
-  }
-});
-
-dom.sidebarCloseBtn?.addEventListener('click', closeMobileSidebar);
-dom.sidebarOverlay.addEventListener('click', closeMobileSidebar);
-
-function openMobileSidebar() {
-  dom.sidebar.classList.add('mobile-open');
-  dom.sidebarOverlay.classList.add('active');
-  dom.sidebarOverlay.classList.remove('hidden');
-}
-
-function closeMobileSidebar() {
-  dom.sidebar.classList.remove('mobile-open');
-  dom.sidebarOverlay.classList.remove('active');
-  dom.sidebarOverlay.classList.add('hidden');
-}
-
-/* ================================================================
-   NEW CHAT BUTTON
-   ================================================================ */
-dom.newChatBtn.addEventListener('click', (e) => {
-  addRipple(dom.newChatBtn, e);
-  handleNewChat();
-  closeMobileSidebar();
-});
-
-/* ================================================================
-   CLEAR CHAT BUTTON
-   ================================================================ */
-dom.clearChatBtn.addEventListener('click', handleClearChat);
-
-/* ================================================================
-   SUGGESTION PILLS
-   ================================================================ */
-dom.suggestionPills.forEach(pill => {
-  pill.addEventListener('click', (e) => {
-    const prompt = pill.dataset.prompt;
-    if (!prompt) return;
-    addRipple(pill, e);
-    dom.messageInput.value = prompt;
-    dom.messageInput.style.height = 'auto';
-    dom.messageInput.style.height = Math.min(dom.messageInput.scrollHeight, 200) + 'px';
-    updateSendButton();
-    dom.messageInput.focus();
-    handleSend();
-  });
-});
-
-/* ================================================================
-   KEYBOARD SHORTCUTS
-   ================================================================ */
-document.addEventListener('keydown', (e) => {
-  // Cmd/Ctrl+K → New Chat
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+userInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    handleNewChat();
-  }
-  // Escape → close mobile sidebar
-  if (e.key === 'Escape') {
-    closeMobileSidebar();
+    sendMessage();
   }
 });
 
-/* ================================================================
-   INIT
-   ================================================================ */
-function init() {
-  // Load persisted data
-  loadFromLocalStorage();
+// ─── Init ─────────────────────────────────────────────────
+(function init() {
+  showDashboard();
 
-  // If there's an active chat, render it; else create a fresh one
-  if (state.activeChatId && state.chats[state.activeChatId]) {
-    renderMessages();
-    updateChatHeader(state.chats[state.activeChatId].title);
-  } else {
-    // Don't auto-create — just show welcome with no active chat
-    state.activeChatId = null;
-    showWelcomeScreen();
-    updateChatHeader('New Conversation');
+  // Check key on load and quietly surface a hint if missing
+  if (!API_KEY || API_KEY === 'YOUR_GROQ_API_KEY_HERE') {
+    console.warn(
+      '%cNovaMind AI%c — Add your Groq API key in app.js (line 7) to activate. Get one free at https://console.groq.com',
+      'color:#7c5cfc;font-weight:bold;', 'color:#888;'
+    );
   }
-
-  renderSidebar();
-  dom.messageInput.focus();
-  updateSendButton();
-
-  // Init Lucide icons (fallback)
-  lucide.createIcons();
-}
-
-/* Run */
-init();
+})();

@@ -3,275 +3,296 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NovaMind AI — Intelligent Conversation</title>
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'nova-bg':       '#0a0a14',
-            'nova-surface':  '#0f0f1e',
-            'nova-panel':    '#13132a',
-            'nova-border':   '#1e1e3a',
-            'nova-indigo':   '#6366f1',
-            'nova-violet':   '#8b5cf6',
-            'nova-cyan':     '#22d3ee',
-            'nova-text':     '#e2e8f0',
-            'nova-muted':    '#64748b',
-            'nova-user-bg':  '#1a1a3e',
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <!-- Custom Styles -->
+  <meta name="description" content="NovaMind AI by CreativeStack — an omniscient hyper-intelligent assistant for students, developers, and business professionals. Ask anything and get lightning-fast, detailed answers." />
+  <meta name="keywords" content="AI assistant, student AI, coding AI, business AI, NovaMind AI, CreativeStack, Groq AI" />
+  <meta name="author" content="CreativeStack" />
+  <meta property="og:title" content="NovaMind AI — Intelligence Redefined" />
+  <meta property="og:description" content="The premium AI assistant for students, programmers, and professionals. Powered by cutting-edge Groq inference." />
+  <meta property="og:type" content="website" />
+  <title>NovaMind AI — Intelligence Redefined | CreativeStack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-nova-bg text-nova-text" id="app-body">
+<body>
 
-  <!-- ============================================================ -->
-  <!-- APP WRAPPER                                                   -->
-  <!-- ============================================================ -->
-  <div id="app-wrapper" class="flex h-screen w-screen overflow-hidden relative">
-
-    <!-- ========================================================== -->
-    <!-- SIDEBAR OVERLAY (mobile)                                   -->
-    <!-- ========================================================== -->
-    <div id="sidebar-overlay" class="sidebar-overlay hidden fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden"></div>
-
-    <!-- ========================================================== -->
-    <!-- LEFT SIDEBAR                                               -->
-    <!-- ========================================================== -->
-    <aside id="sidebar" class="sidebar flex flex-col z-30 w-72 flex-shrink-0 h-screen">
-
-      <!-- Sidebar Header / Logo -->
-      <div class="sidebar-header px-5 pt-6 pb-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="logo-orb" aria-hidden="true"></div>
-          <span class="logo-text">NovaMind</span>
-        </div>
-        <button id="sidebar-close-btn" class="icon-btn lg:hidden" aria-label="Close sidebar">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- New Chat Button -->
-      <div class="px-4 pb-4">
-        <button id="new-chat-btn" class="new-chat-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200" aria-label="Start a new chat">
-          <i data-lucide="plus" class="w-4 h-4 flex-shrink-0"></i>
-          <span>New Conversation</span>
-          <kbd class="ml-auto text-xs opacity-40 font-mono">⌘K</kbd>
-        </button>
-      </div>
-
-      <!-- Section Label -->
-      <div class="px-5 pb-2">
-        <p class="text-xs font-semibold uppercase tracking-widest text-nova-muted/60">Recent</p>
-      </div>
-
-      <!-- Chat History List -->
-      <nav id="chat-history-list" class="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-thin" aria-label="Chat history">
-        <!-- Dynamically populated by app.js -->
-        <div id="no-chats-placeholder" class="px-3 py-8 text-center text-nova-muted text-sm">
-          <i data-lucide="message-circle" class="w-8 h-8 mx-auto mb-3 opacity-30"></i>
-          <p class="opacity-50">No conversations yet</p>
-          <p class="opacity-30 text-xs mt-1">Start a new chat above</p>
-        </div>
-      </nav>
-
-      <!-- Sidebar Footer -->
-      <div class="sidebar-footer p-4 mt-auto border-t border-nova-border/50">
-        <div class="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition cursor-pointer">
-          <div class="avatar-circle flex-shrink-0" aria-hidden="true">
-            <i data-lucide="user" class="w-4 h-4"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">You</p>
-            <p class="text-xs text-nova-muted truncate">Free Plan</p>
-          </div>
-          <i data-lucide="settings" class="w-4 h-4 text-nova-muted hover:text-nova-indigo transition-colors cursor-pointer"></i>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-header">
+      <div class="logo-mark">
+        <span class="logo-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="url(#lg1)" stroke-width="1.5"/>
+            <path d="M8 14 L14 8 L20 14 L14 20 Z" fill="url(#lg2)" opacity="0.9"/>
+            <circle cx="14" cy="14" r="3" fill="white"/>
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#7c5cfc"/>
+                <stop offset="1" stop-color="#00d2ff"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="8" y1="8" x2="20" y2="20">
+                <stop stop-color="#9f7ffe"/>
+                <stop offset="1" stop-color="#38cfff"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </span>
+        <div class="logo-text">
+          <span class="brand-name">NovaMind</span>
+          <span class="brand-suffix">AI</span>
         </div>
       </div>
-    </aside>
+      <p class="brand-tagline">by <strong>CreativeStack</strong></p>
+    </div>
 
-    <!-- ========================================================== -->
-    <!-- MAIN CHAT WINDOW                                           -->
-    <!-- ========================================================== -->
-    <main id="main-window" class="main-window flex flex-col flex-1 h-screen overflow-hidden relative">
+    <nav class="sidebar-nav" aria-label="Sidebar navigation">
+      <p class="nav-label">Navigate</p>
+      <ul>
+        <li>
+          <a href="#about" class="nav-link active" data-page="chat" onclick="showPage('chat')">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 3h12v9H2z" stroke="currentColor" stroke-width="1.3" rx="1"/><path d="M5 7h6M5 10h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Chat
+          </a>
+        </li>
+        <li>
+          <a href="#about" class="nav-link" data-page="about" onclick="showPage('about')">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v5M8 5v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            About Us
+          </a>
+        </li>
+        <li>
+          <a href="#privacy" class="nav-link" data-page="privacy" onclick="showPage('privacy')">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M8 2L3 4.5v4C3 11.5 5.5 14 8 14.5c2.5-.5 5-3 5-6V4.5L8 2z" stroke="currentColor" stroke-width="1.3"/></svg>
+            Privacy Policy
+          </a>
+        </li>
+        <li>
+          <a href="#terms" class="nav-link" data-page="terms" onclick="showPage('terms')">
+            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 6h5M5.5 9h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Terms of Service
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-      <!-- -------------------------------------------------------- -->
-      <!-- TOP HEADER BAR                                          -->
-      <!-- -------------------------------------------------------- -->
-      <header id="chat-header" class="chat-header flex items-center justify-between px-5 py-4 flex-shrink-0">
+    <div class="sidebar-actions">
+      <button class="btn-clear" id="clearChatBtn" onclick="clearChat()" aria-label="Clear conversation">
+        <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><path d="M3 3l9 9M3 12L12 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Clear Chat
+      </button>
+    </div>
 
-        <!-- Left: Toggle + Chat Title -->
-        <div class="flex items-center gap-4 min-w-0">
-          <button id="sidebar-toggle-btn" class="icon-btn" aria-label="Toggle sidebar">
-            <i data-lucide="panel-left" class="w-5 h-5"></i>
-          </button>
-          <div class="min-w-0">
-            <h1 id="chat-title" class="chat-title-text truncate">New Conversation</h1>
-            <p id="chat-subtitle" class="chat-subtitle-text">gemini-1.5-flash · multimodal</p>
-          </div>
+    <div class="sidebar-footer">
+      <p class="sidebar-credit">© 2025 CreativeStack. All rights reserved.</p>
+    </div>
+  </aside>
+
+  <!-- Mobile Topbar -->
+  <header class="mobile-topbar" role="banner">
+    <button class="burger" id="burgerBtn" onclick="toggleSidebar()" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="mobile-logo">
+      <span class="brand-name">NovaMind</span><span class="brand-suffix">AI</span>
+    </div>
+    <div style="width:40px"></div>
+  </header>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main" id="mainContent" role="main">
+
+    <!-- ======= PAGE: CHAT ======= -->
+    <section class="page page-chat active" id="page-chat" aria-label="Chat workspace">
+
+      <!-- Welcome / Dashboard (shown before first message) -->
+      <div class="dashboard" id="dashboard">
+        <div class="dashboard-hero">
+          <div class="hero-glow" aria-hidden="true"></div>
+          <h1 class="dashboard-title">
+            What can <span class="accent-gradient">NovaMind AI</span><br>do for you today?
+          </h1>
+          <p class="dashboard-sub">Your omniscient AI partner — from exam prep to enterprise strategy, from debugging code to crafting content. Ask anything.</p>
         </div>
 
-        <!-- Right: Actions -->
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <button id="clear-chat-btn" class="icon-btn" aria-label="Clear current chat" title="Clear chat">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
-          <button class="icon-btn" aria-label="Share conversation" title="Share">
-            <i data-lucide="share-2" class="w-4 h-4"></i>
-          </button>
-          <div class="model-badge">
-            <i data-lucide="zap" class="w-3 h-3"></i>
-            <span>Flash 1.5</span>
-          </div>
-        </div>
-      </header>
+        <div class="feature-cards" role="list" aria-label="AI capability modes">
 
-      <!-- -------------------------------------------------------- -->
-      <!-- SCROLLABLE CHAT DISPLAY                                  -->
-      <!-- -------------------------------------------------------- -->
-      <div id="chat-display" class="chat-display flex-1 overflow-y-auto scrollbar-thin px-4 py-6 space-y-6" aria-live="polite" aria-label="Conversation">
+          <article class="feature-card" role="listitem" onclick="insertPrompt('Explain the concept of photosynthesis in detail for a high-school student, with examples and a summary.')">
+            <div class="card-icon student" aria-hidden="true">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 8v8l10 5 10-5V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <div class="card-body">
+              <h2 class="card-title">Student Mode</h2>
+              <p class="card-desc">High-level learning support across all subjects — from K-12 to advanced university. Step-by-step explanations, essay help, and concept breakdowns.</p>
+              <span class="card-cta">Try an example →</span>
+            </div>
+            <div class="card-tag">Education</div>
+          </article>
 
-        <!-- Welcome Screen (shown when no messages) -->
-        <div id="welcome-screen" class="welcome-screen flex flex-col items-center justify-center h-full min-h-[60vh] text-center px-4">
-          <div class="welcome-orb-container mb-8" aria-hidden="true">
-            <div class="welcome-orb"></div>
-          </div>
-          <h2 class="welcome-heading mb-3">What can I help with?</h2>
-          <p class="welcome-subheading mb-10 max-w-md">
-            Ask me anything — from complex coding challenges to creative writing, data analysis, or casual conversation.
-          </p>
-          <!-- Suggestion Pills -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
-            <button class="suggestion-pill" data-prompt="Explain quantum computing in simple terms with an analogy">
-              <i data-lucide="atom" class="w-4 h-4 flex-shrink-0 text-nova-indigo"></i>
-              <span>Explain quantum computing simply</span>
-            </button>
-            <button class="suggestion-pill" data-prompt="Write a Python function to scrape and parse a website's headlines using BeautifulSoup">
-              <i data-lucide="code-2" class="w-4 h-4 flex-shrink-0 text-nova-violet"></i>
-              <span>Python web scraping code</span>
-            </button>
-            <button class="suggestion-pill" data-prompt="Help me brainstorm 10 creative names for a futuristic AI startup with a space theme">
-              <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0 text-nova-cyan"></i>
-              <span>Brainstorm startup names</span>
-            </button>
-            <button class="suggestion-pill" data-prompt="What are the key differences between REST and GraphQL APIs? When should I use each?">
-              <i data-lucide="git-branch" class="w-4 h-4 flex-shrink-0 text-nova-indigo"></i>
-              <span>REST vs GraphQL explained</span>
-            </button>
-          </div>
+          <article class="feature-card" role="listitem" onclick="insertPrompt('Write a clean, commented Python function that scrapes a website and returns structured JSON data. Explain each step.')">
+            <div class="card-icon dev" aria-hidden="true">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 6l-4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <div class="card-body">
+              <h2 class="card-title">Developer Mode</h2>
+              <p class="card-desc">Lightning-fast code generation, debugging, code review, and architecture design. Supports Python, JS, TypeScript, Rust, Go, SQL, and more.</p>
+              <span class="card-cta">Try an example →</span>
+            </div>
+            <div class="card-tag">Engineering</div>
+          </article>
+
+          <article class="feature-card" role="listitem" onclick="insertPrompt('Create a detailed go-to-market strategy for a B2B SaaS startup targeting HR departments in mid-sized companies.')">
+            <div class="card-icon biz" aria-hidden="true">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 3-3 4 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6" r="2" stroke="currentColor" stroke-width="1.4"/></svg>
+            </div>
+            <div class="card-body">
+              <h2 class="card-title">Business Mode</h2>
+              <p class="card-desc">Strategic thinking on demand — market analysis, business plans, pitch deck copy, investor memos, content strategy, and executive summaries.</p>
+              <span class="card-cta">Try an example →</span>
+            </div>
+            <div class="card-tag">Strategy</div>
+          </article>
+
         </div>
 
-        <!-- Messages will be dynamically injected here -->
-        <div id="messages-container" class="messages-container space-y-6 hidden"></div>
-
-        <!-- AI Thinking / Skeleton Loader -->
-        <div id="thinking-indicator" class="thinking-indicator hidden flex gap-4 px-2">
-          <div class="ai-avatar flex-shrink-0" aria-hidden="true">
-            <div class="ai-avatar-inner"></div>
+        <!-- AdSense-friendly content block -->
+        <div class="info-strip" role="complementary" aria-label="About NovaMind AI">
+          <div class="info-item">
+            <span class="info-icon">⚡</span>
+            <div>
+              <strong>Ultra-Fast Responses</strong>
+              <p>Powered by Groq's LPU inference — answers in under 1 second.</p>
+            </div>
           </div>
-          <div class="thinking-bubbles">
-            <div class="thinking-label">NovaMind is thinking</div>
-            <div class="skeleton-lines mt-2">
-              <div class="skeleton-line" style="width: 75%"></div>
-              <div class="skeleton-line" style="width: 55%"></div>
-              <div class="skeleton-line" style="width: 85%"></div>
+          <div class="info-item">
+            <span class="info-icon">🔒</span>
+            <div>
+              <strong>Privacy-First</strong>
+              <p>We do not store your conversations. Your data stays yours.</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🌐</span>
+            <div>
+              <strong>Versatile Intelligence</strong>
+              <p>From calculus to cloud architecture — one assistant, all domains.</p>
             </div>
           </div>
         </div>
+      </div>
 
-      </div><!-- end #chat-display -->
+      <!-- Chat Messages -->
+      <div class="chat-window" id="chatWindow" role="log" aria-live="polite" aria-label="Conversation"></div>
 
-      <!-- -------------------------------------------------------- -->
-      <!-- BOTTOM INPUT CONSOLE                                     -->
-      <!-- -------------------------------------------------------- -->
-      <div id="input-console" class="input-console flex-shrink-0 px-4 pb-5 pt-3">
+    </section>
 
-        <!-- Image Preview Chip (appears on upload) -->
-        <div id="image-preview-bar" class="image-preview-bar hidden mb-3 px-2">
-          <div id="image-chip" class="image-chip inline-flex items-center gap-2">
-            <img id="image-preview-thumb" src="" alt="Uploaded preview" class="image-thumb" />
-            <span id="image-preview-name" class="text-xs text-nova-muted truncate max-w-[140px]">image.png</span>
-            <button id="remove-image-btn" class="remove-image-btn" aria-label="Remove image">
-              <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-          </div>
+    <!-- ======= PAGE: ABOUT ======= -->
+    <section class="page page-content" id="page-about" aria-label="About NovaMind AI">
+      <div class="content-wrap">
+        <h1>About NovaMind AI</h1>
+        <p class="lead">NovaMind AI is a next-generation artificial intelligence assistant built by <strong>CreativeStack</strong> to empower students, developers, researchers, and business professionals with instant, high-quality intelligence.</p>
+        <h2>Our Mission</h2>
+        <p>We believe powerful AI should be accessible to everyone — not locked behind expensive subscriptions or complex interfaces. NovaMind AI delivers expert-level answers across education, software engineering, content creation, and strategic business thinking at zero friction.</p>
+        <h2>Powered by Cutting-Edge Technology</h2>
+        <p>NovaMind AI is built on top of Groq's revolutionary Language Processing Unit (LPU) infrastructure, delivering response speeds dramatically faster than traditional GPU-based AI systems. We leverage state-of-the-art open language models to provide accurate, contextual, and deeply useful responses.</p>
+        <h2>Who We Serve</h2>
+        <ul>
+          <li><strong>Students (K-12 & University):</strong> Get instant tutoring, essay feedback, concept explanations, and exam preparation across every subject.</li>
+          <li><strong>Developers & Engineers:</strong> Generate code, debug errors, design system architecture, and review pull requests in seconds.</li>
+          <li><strong>Business Professionals:</strong> Draft business strategies, create market analyses, write professional communications, and develop pitch decks.</li>
+          <li><strong>Content Creators:</strong> Produce SEO-optimized articles, social media copy, scripts, and creative writing with AI guidance.</li>
+        </ul>
+        <h2>About CreativeStack</h2>
+        <p>CreativeStack is a technology product studio dedicated to building intelligent tools that solve real-world problems. NovaMind AI is our flagship product, combining beautiful design with raw computational power.</p>
+        <p>For inquiries, reach us at: <a href="mailto:hello@creativestack.ai">hello@creativestack.ai</a></p>
+      </div>
+    </section>
+
+    <!-- ======= PAGE: PRIVACY ======= -->
+    <section class="page page-content" id="page-privacy" aria-label="Privacy Policy">
+      <div class="content-wrap">
+        <h1>Privacy Policy</h1>
+        <p class="meta-info">Last Updated: June 1, 2025</p>
+        <p class="lead">CreativeStack ("we," "our," or "us") operates NovaMind AI. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
+        <h2>1. Information We Collect</h2>
+        <p>We may collect the following categories of information:</p>
+        <ul>
+          <li><strong>Usage Data:</strong> Browser type, pages visited, time and date of visit, and time spent on pages.</li>
+          <li><strong>Prompt Data:</strong> Text you submit to the AI is transmitted to our AI inference provider to generate a response. We do not permanently store conversation histories linked to your identity.</li>
+          <li><strong>Cookies:</strong> We use cookies to maintain session preferences. You may disable cookies in your browser settings.</li>
+        </ul>
+        <h2>2. How We Use Your Information</h2>
+        <p>We use collected information to: operate and improve the Service; monitor usage analytics; detect and prevent fraudulent or abusive activity; and comply with legal obligations.</p>
+        <h2>3. Third-Party Services</h2>
+        <p>NovaMind AI uses Groq's API for AI inference. Groq's privacy policy governs data processing on their infrastructure. We may also use Google Analytics for aggregated, anonymized usage statistics. This site may display Google AdSense advertisements; Google's advertising policies apply to those ad units.</p>
+        <h2>4. Data Retention</h2>
+        <p>We do not retain your conversation data beyond the active session. Anonymized, aggregated analytics data may be retained for up to 12 months.</p>
+        <h2>5. Your Rights</h2>
+        <p>Depending on your jurisdiction, you may have the right to access, correct, or delete personal data we hold. Contact us at <a href="mailto:privacy@creativestack.ai">privacy@creativestack.ai</a> to exercise these rights.</p>
+        <h2>6. Children's Privacy</h2>
+        <p>NovaMind AI is not directed to children under 13. We do not knowingly collect information from children under 13. If you believe a child has provided us personal information, please contact us immediately.</p>
+        <h2>7. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated revision date. Continued use of the Service after changes constitutes acceptance.</p>
+        <h2>8. Contact Us</h2>
+        <p>For privacy-related questions: <a href="mailto:privacy@creativestack.ai">privacy@creativestack.ai</a></p>
+      </div>
+    </section>
+
+    <!-- ======= PAGE: TERMS ======= -->
+    <section class="page page-content" id="page-terms" aria-label="Terms of Service">
+      <div class="content-wrap">
+        <h1>Terms of Service</h1>
+        <p class="meta-info">Last Updated: June 1, 2025</p>
+        <p class="lead">By accessing or using NovaMind AI, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+        <h2>1. Acceptance of Terms</h2>
+        <p>By using NovaMind AI, operated by CreativeStack, you confirm that you are at least 13 years of age and agree to comply with these Terms. If you do not agree, you may not use the Service.</p>
+        <h2>2. Description of Service</h2>
+        <p>NovaMind AI provides an AI-powered conversational assistant accessible via our web interface. The Service is provided "as is" and may be updated, modified, or discontinued at any time without prior notice.</p>
+        <h2>3. Acceptable Use</h2>
+        <p>You agree NOT to use NovaMind AI to: generate illegal, harmful, defamatory, or harassing content; attempt to extract sensitive personal data; circumvent, disable, or interfere with security features; use the Service for commercial scraping or automated abuse; or violate any applicable local, national, or international law.</p>
+        <h2>4. Intellectual Property</h2>
+        <p>All trademarks, logos, and service marks displayed are the property of CreativeStack or their respective owners. AI-generated content produced through NovaMind AI may be used by you for personal and commercial purposes, subject to the underlying model provider's terms.</p>
+        <h2>5. Disclaimer of Warranties</h2>
+        <p>NovaMind AI is provided without warranties of any kind, express or implied. We do not guarantee the accuracy, completeness, or reliability of AI-generated responses. Always verify critical information with authoritative sources.</p>
+        <h2>6. Limitation of Liability</h2>
+        <p>To the fullest extent permitted by law, CreativeStack shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use the Service.</p>
+        <h2>7. Changes to Terms</h2>
+        <p>We reserve the right to modify these Terms at any time. Continued use of the Service following any changes constitutes acceptance of the revised Terms.</p>
+        <h2>8. Governing Law</h2>
+        <p>These Terms shall be governed by and interpreted in accordance with applicable laws, without regard to conflict of law provisions.</p>
+        <h2>9. Contact</h2>
+        <p>For legal inquiries: <a href="mailto:legal@creativestack.ai">legal@creativestack.ai</a></p>
+      </div>
+    </section>
+
+    <!-- ===== PROMPT INPUT ===== -->
+    <footer class="prompt-bar" role="contentinfo" aria-label="Message input">
+      <div class="prompt-inner">
+        <div class="prompt-box" id="promptBox">
+          <textarea
+            id="userInput"
+            class="prompt-textarea"
+            placeholder="Ask NovaMind AI anything…"
+            rows="1"
+            aria-label="Your message"
+            autocomplete="off"
+            spellcheck="true"
+          ></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Send message">
+            <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+              <path d="M15.5 9L2.5 2l3 7-3 7 13-7z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
+        <p class="prompt-disclaimer">NovaMind AI can make mistakes. Verify important information.</p>
+      </div>
+    </footer>
 
-        <!-- Input Box -->
-        <div class="input-box-wrapper">
-          <div class="input-box flex items-end gap-3 px-4 py-3">
+  </main>
 
-            <!-- Attachment Button -->
-            <div class="relative flex-shrink-0">
-              <button id="attach-btn" class="attach-btn" aria-label="Upload image">
-                <i data-lucide="paperclip" class="w-5 h-5"></i>
-              </button>
-              <input
-                type="file"
-                id="file-input"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                class="hidden"
-                aria-label="Upload image file"
-              />
-            </div>
-
-            <!-- Text Textarea -->
-            <textarea
-              id="message-input"
-              class="message-textarea flex-1"
-              placeholder="Message NovaMind..."
-              rows="1"
-              aria-label="Message input"
-              maxlength="8000"
-            ></textarea>
-
-            <!-- Send Button -->
-            <button id="send-btn" class="send-btn flex-shrink-0" aria-label="Send message" disabled>
-              <i data-lucide="arrow-up" class="w-5 h-5"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Disclaimer -->
-        <p class="disclaimer-text text-center mt-3">
-          NovaMind can make mistakes. Verify important information.
-        </p>
-      </div><!-- end #input-console -->
-
-    </main><!-- end #main-window -->
-
-  </div><!-- end #app-wrapper -->
-
-  <!-- ============================================================ -->
-  <!-- TOAST NOTIFICATION                                           -->
-  <!-- ============================================================ -->
-  <div id="toast" class="toast hidden" role="alert" aria-live="assertive">
-    <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
-    <span id="toast-message">Message here</span>
-  </div>
-
-  <!-- Lucide icons init -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
-  </script>
-
-  <!-- App Logic (ES Module) -->
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
