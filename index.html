@@ -3,183 +3,184 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="NovaMind AI by CreativeStack — an omniscient hyper-intelligent assistant for students, developers, and business professionals. Ask anything and get lightning-fast, detailed answers." />
-  <meta name="keywords" content="AI assistant, student AI, coding AI, business AI, NovaMind AI, CreativeStack, Groq AI" />
+  <meta name="description" content="NovaMind AI by CreativeStack — a hyper-intelligent AI assistant for students, developers, and business professionals. Fast, deep, and insightful responses powered by advanced LLMs." />
+  <meta name="keywords" content="AI assistant, NovaMind AI, CreativeStack, student AI, coding AI, business AI, chat AI" />
   <meta name="author" content="CreativeStack" />
   <meta property="og:title" content="NovaMind AI — Intelligence Redefined" />
-  <meta property="og:description" content="The premium AI assistant for students, programmers, and professionals. Powered by cutting-edge Groq inference." />
+  <meta property="og:description" content="Premium AI assistant with chat history, streaming responses, and expert-level intelligence across every domain." />
   <meta property="og:type" content="website" />
   <title>NovaMind AI — Intelligence Redefined | CreativeStack</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- ===== SIDEBAR ===== -->
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
   <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
-    <div class="sidebar-header">
-      <div class="logo-mark">
-        <span class="logo-icon" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <circle cx="14" cy="14" r="13" stroke="url(#lg1)" stroke-width="1.5"/>
-            <path d="M8 14 L14 8 L20 14 L14 20 Z" fill="url(#lg2)" opacity="0.9"/>
-            <circle cx="14" cy="14" r="3" fill="white"/>
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <div class="logo-orb" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <polygon points="11,2 20,7 20,15 11,20 2,15 2,7" stroke="url(#hex-g)" stroke-width="1.4" fill="url(#hex-fill)"/>
+            <circle cx="11" cy="11" r="3" fill="white" opacity="0.9"/>
             <defs>
-              <linearGradient id="lg1" x1="0" y1="0" x2="28" y2="28">
-                <stop stop-color="#7c5cfc"/>
-                <stop offset="1" stop-color="#00d2ff"/>
+              <linearGradient id="hex-g" x1="2" y1="2" x2="20" y2="20">
+                <stop stop-color="#7b4fff"/><stop offset="1" stop-color="#00cfff"/>
               </linearGradient>
-              <linearGradient id="lg2" x1="8" y1="8" x2="20" y2="20">
-                <stop stop-color="#9f7ffe"/>
-                <stop offset="1" stop-color="#38cfff"/>
+              <linearGradient id="hex-fill" x1="2" y1="2" x2="20" y2="20">
+                <stop stop-color="#7b4fff" stop-opacity="0.3"/><stop offset="1" stop-color="#00cfff" stop-opacity="0.1"/>
               </linearGradient>
             </defs>
           </svg>
-        </span>
-        <div class="logo-text">
-          <span class="brand-name">NovaMind</span>
-          <span class="brand-suffix">AI</span>
+        </div>
+        <div class="brand-wordmark">
+          <span class="brand-nova">Nova</span><span class="brand-mind">Mind</span><span class="brand-ai-badge">AI</span>
         </div>
       </div>
-      <p class="brand-tagline">by <strong>CreativeStack</strong></p>
+      <p class="brand-by">by <strong>CreativeStack</strong></p>
     </div>
 
-    <nav class="sidebar-nav" aria-label="Sidebar navigation">
-      <p class="nav-label">Navigate</p>
+    <!-- New Chat -->
+    <button class="btn-new-chat" id="newChatBtn" onclick="startNewChat()" aria-label="Start a new chat">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+        <path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      New Chat
+    </button>
+
+    <!-- Chat History -->
+    <div class="history-section">
+      <p class="history-label">Recent Chats</p>
+      <ul class="history-list" id="historyList" role="list" aria-label="Chat history">
+        <!-- Populated by JS -->
+        <li class="history-empty" id="historyEmpty">No previous chats yet.</li>
+      </ul>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav" aria-label="Pages">
+      <p class="nav-section-label">Pages</p>
       <ul>
-        <li>
-          <a href="#about" class="nav-link active" data-page="chat" onclick="showPage('chat')">
-            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 3h12v9H2z" stroke="currentColor" stroke-width="1.3" rx="1"/><path d="M5 7h6M5 10h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            Chat
-          </a>
-        </li>
-        <li>
-          <a href="#about" class="nav-link" data-page="about" onclick="showPage('about')">
-            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v5M8 5v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            About Us
-          </a>
-        </li>
-        <li>
-          <a href="#privacy" class="nav-link" data-page="privacy" onclick="showPage('privacy')">
-            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M8 2L3 4.5v4C3 11.5 5.5 14 8 14.5c2.5-.5 5-3 5-6V4.5L8 2z" stroke="currentColor" stroke-width="1.3"/></svg>
-            Privacy Policy
-          </a>
-        </li>
-        <li>
-          <a href="#terms" class="nav-link" data-page="terms" onclick="showPage('terms')">
-            <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 6h5M5.5 9h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            Terms of Service
-          </a>
-        </li>
+        <li><a class="nav-link active" data-page="chat" onclick="showPage('chat')" href="#">
+          <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><path d="M1.5 2.5h12v9h-7l-3 2v-2h-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Chat
+        </a></li>
+        <li><a class="nav-link" data-page="about" onclick="showPage('about')" href="#">
+          <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 6.5v5M7.5 4.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>About
+        </a></li>
+        <li><a class="nav-link" data-page="privacy" onclick="showPage('privacy')" href="#">
+          <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><path d="M7.5 1.5L2 4v4.5C2 11.5 4.5 14 7.5 14.5c3-.5 5.5-3 5.5-6V4L7.5 1.5z" stroke="currentColor" stroke-width="1.3"/></svg>Privacy
+        </a></li>
+        <li><a class="nav-link" data-page="terms" onclick="showPage('terms')" href="#">
+          <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><rect x="2" y="1.5" width="11" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5 5.5h5M5 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Terms
+        </a></li>
       </ul>
     </nav>
 
-    <div class="sidebar-actions">
-      <button class="btn-clear" id="clearChatBtn" onclick="clearChat()" aria-label="Clear conversation">
-        <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><path d="M3 3l9 9M3 12L12 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        Clear Chat
-      </button>
-    </div>
-
     <div class="sidebar-footer">
-      <p class="sidebar-credit">© 2025 CreativeStack. All rights reserved.</p>
+      <p>© 2025 CreativeStack · All rights reserved.</p>
     </div>
   </aside>
 
   <!-- Mobile Topbar -->
-  <header class="mobile-topbar" role="banner">
+  <header class="mobile-topbar" id="mobileTopbar" role="banner">
     <button class="burger" id="burgerBtn" onclick="toggleSidebar()" aria-label="Toggle menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-    <div class="mobile-logo">
-      <span class="brand-name">NovaMind</span><span class="brand-suffix">AI</span>
+    <div class="mobile-brand">
+      <span class="brand-nova">Nova</span><span class="brand-mind">Mind</span><span class="brand-ai-badge" style="font-size:9px;padding:2px 5px;">AI</span>
     </div>
-    <div style="width:40px"></div>
+    <button class="mobile-new-chat" onclick="startNewChat()" aria-label="New chat">
+      <svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 2v13M2 8.5h13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
   </header>
 
-  <!-- Sidebar overlay -->
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- ===== MAIN CONTENT ===== -->
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
   <main class="main" id="mainContent" role="main">
 
-    <!-- ======= PAGE: CHAT ======= -->
+    <!-- ── PAGE: CHAT ── -->
     <section class="page page-chat active" id="page-chat" aria-label="Chat workspace">
 
-      <!-- Welcome / Dashboard (shown before first message) -->
+      <!-- Dashboard (pre-chat) -->
       <div class="dashboard" id="dashboard">
-        <div class="dashboard-hero">
-          <div class="hero-glow" aria-hidden="true"></div>
-          <h1 class="dashboard-title">
-            What can <span class="accent-gradient">NovaMind AI</span><br>do for you today?
-          </h1>
-          <p class="dashboard-sub">Your omniscient AI partner — from exam prep to enterprise strategy, from debugging code to crafting content. Ask anything.</p>
-        </div>
-
-        <div class="feature-cards" role="list" aria-label="AI capability modes">
-
-          <article class="feature-card" role="listitem" onclick="insertPrompt('Explain the concept of photosynthesis in detail for a high-school student, with examples and a summary.')">
-            <div class="card-icon student" aria-hidden="true">
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 8v8l10 5 10-5V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 10.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div class="dashboard-inner">
+          <div class="dash-hero">
+            <div class="dash-glow-ring" aria-hidden="true"></div>
+            <div class="dash-orb" aria-hidden="true">
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                <polygon points="28,4 52,17 52,39 28,52 4,39 4,17" stroke="url(#big-hex)" stroke-width="2" fill="url(#big-fill)"/>
+                <circle cx="28" cy="28" r="9" fill="white" opacity="0.85"/>
+                <defs>
+                  <linearGradient id="big-hex" x1="4" y1="4" x2="52" y2="52"><stop stop-color="#7b4fff"/><stop offset="1" stop-color="#00cfff"/></linearGradient>
+                  <linearGradient id="big-fill" x1="4" y1="4" x2="52" y2="52"><stop stop-color="#7b4fff" stop-opacity="0.25"/><stop offset="1" stop-color="#00cfff" stop-opacity="0.08"/></linearGradient>
+                </defs>
+              </svg>
             </div>
-            <div class="card-body">
-              <h2 class="card-title">Student Mode</h2>
-              <p class="card-desc">High-level learning support across all subjects — from K-12 to advanced university. Step-by-step explanations, essay help, and concept breakdowns.</p>
-              <span class="card-cta">Try an example →</span>
-            </div>
-            <div class="card-tag">Education</div>
-          </article>
-
-          <article class="feature-card" role="listitem" onclick="insertPrompt('Write a clean, commented Python function that scrapes a website and returns structured JSON data. Explain each step.')">
-            <div class="card-icon dev" aria-hidden="true">
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 6l-4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            </div>
-            <div class="card-body">
-              <h2 class="card-title">Developer Mode</h2>
-              <p class="card-desc">Lightning-fast code generation, debugging, code review, and architecture design. Supports Python, JS, TypeScript, Rust, Go, SQL, and more.</p>
-              <span class="card-cta">Try an example →</span>
-            </div>
-            <div class="card-tag">Engineering</div>
-          </article>
-
-          <article class="feature-card" role="listitem" onclick="insertPrompt('Create a detailed go-to-market strategy for a B2B SaaS startup targeting HR departments in mid-sized companies.')">
-            <div class="card-icon biz" aria-hidden="true">
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 3-3 4 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6" r="2" stroke="currentColor" stroke-width="1.4"/></svg>
-            </div>
-            <div class="card-body">
-              <h2 class="card-title">Business Mode</h2>
-              <p class="card-desc">Strategic thinking on demand — market analysis, business plans, pitch deck copy, investor memos, content strategy, and executive summaries.</p>
-              <span class="card-cta">Try an example →</span>
-            </div>
-            <div class="card-tag">Strategy</div>
-          </article>
-
-        </div>
-
-        <!-- AdSense-friendly content block -->
-        <div class="info-strip" role="complementary" aria-label="About NovaMind AI">
-          <div class="info-item">
-            <span class="info-icon">⚡</span>
-            <div>
-              <strong>Ultra-Fast Responses</strong>
-              <p>Powered by Groq's LPU inference — answers in under 1 second.</p>
-            </div>
+            <h1 class="dash-title">How can I help you<br><span class="grad-text">today?</span></h1>
+            <p class="dash-subtitle">NovaMind AI — expert-level intelligence across coding, education, business strategy, content creation, and beyond.</p>
           </div>
-          <div class="info-item">
-            <span class="info-icon">🔒</span>
-            <div>
-              <strong>Privacy-First</strong>
-              <p>We do not store your conversations. Your data stays yours.</p>
-            </div>
+
+          <!-- Feature Cards -->
+          <div class="feature-grid" role="list">
+            <button class="feat-card" role="listitem" onclick="insertAndSend('Explain neural networks from scratch — assume I am a complete beginner. Use analogies, diagrams in text, and step-by-step examples.')">
+              <div class="feat-icon student">
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 2L2 6.5l8 4.5 8-4.5L10 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 6.5v7l8 4.5 8-4.5v-7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="feat-text">
+                <strong>Student Mode</strong>
+                <span>Deep learning explanations, exam prep &amp; step-by-step tutoring</span>
+              </div>
+            </button>
+
+            <button class="feat-card" role="listitem" onclick="insertAndSend('Write a production-ready REST API in Node.js with Express that handles user authentication (JWT), rate-limiting, and a PostgreSQL integration. Include full commented code and explain every design decision.')">
+              <div class="feat-icon dev">
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M6 8l-4 2 4 2M14 8l4 2-4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5l-4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="feat-text">
+                <strong>Developer Mode</strong>
+                <span>Production code, architecture, debugging &amp; full-stack guidance</span>
+              </div>
+            </button>
+
+            <button class="feat-card" role="listitem" onclick="insertAndSend('Create a comprehensive go-to-market strategy for a B2B SaaS company targeting HR teams. Include positioning, pricing tiers, channels, content strategy, and 90-day execution roadmap.')">
+              <div class="feat-icon biz">
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M3 14l4-7 4 5 3-3 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="feat-text">
+                <strong>Business Mode</strong>
+                <span>Strategy, GTM planning, pitch decks &amp; market analysis</span>
+              </div>
+            </button>
+
+            <button class="feat-card" role="listitem" onclick="insertAndSend('Write a complete viral Twitter/X content strategy for a personal finance brand. Include 30 tweet ideas, content pillars, growth hooks, and an engagement schedule.')">
+              <div class="feat-icon social">
+                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M7 10c0-1.7 1.3-3 3-3s3 1.3 3 3-1.3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 13v2M10 5v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="feat-text">
+                <strong>Social &amp; Marketing</strong>
+                <span>Viral content, brand voice, campaigns &amp; growth tactics</span>
+              </div>
+            </button>
           </div>
-          <div class="info-item">
-            <span class="info-icon">🌐</span>
-            <div>
-              <strong>Versatile Intelligence</strong>
-              <p>From calculus to cloud architecture — one assistant, all domains.</p>
-            </div>
+
+          <!-- Value Strip -->
+          <div class="value-strip" role="complementary">
+            <div class="value-item"><span class="vi-dot purple"></span><strong>llama-3.3-70b</strong><span>Frontier intelligence</span></div>
+            <div class="value-sep"></div>
+            <div class="value-item"><span class="vi-dot blue"></span><strong>Streaming</strong><span>Word-by-word output</span></div>
+            <div class="value-sep"></div>
+            <div class="value-item"><span class="vi-dot green"></span><strong>History Saved</strong><span>Persists in browser</span></div>
           </div>
         </div>
       </div>
@@ -189,107 +190,102 @@
 
     </section>
 
-    <!-- ======= PAGE: ABOUT ======= -->
+    <!-- ── PAGE: ABOUT ── -->
     <section class="page page-content" id="page-about" aria-label="About NovaMind AI">
       <div class="content-wrap">
+        <div class="content-badge">About</div>
         <h1>About NovaMind AI</h1>
-        <p class="lead">NovaMind AI is a next-generation artificial intelligence assistant built by <strong>CreativeStack</strong> to empower students, developers, researchers, and business professionals with instant, high-quality intelligence.</p>
+        <p class="lead">NovaMind AI is a next-generation artificial intelligence assistant built by <strong>CreativeStack</strong> to empower students, developers, researchers, and business professionals with instant, expert-level intelligence.</p>
         <h2>Our Mission</h2>
-        <p>We believe powerful AI should be accessible to everyone — not locked behind expensive subscriptions or complex interfaces. NovaMind AI delivers expert-level answers across education, software engineering, content creation, and strategic business thinking at zero friction.</p>
-        <h2>Powered by Cutting-Edge Technology</h2>
-        <p>NovaMind AI is built on top of Groq's revolutionary Language Processing Unit (LPU) infrastructure, delivering response speeds dramatically faster than traditional GPU-based AI systems. We leverage state-of-the-art open language models to provide accurate, contextual, and deeply useful responses.</p>
-        <h2>Who We Serve</h2>
+        <p>Powerful AI should be accessible to everyone. NovaMind AI delivers expert-level answers across education, software engineering, content creation, and strategic business thinking — with zero friction, zero complexity, and zero compromise on quality.</p>
+        <h2>Powered by Frontier Technology</h2>
+        <p>NovaMind AI runs on Groq's revolutionary Language Processing Unit (LPU) infrastructure paired with Meta's Llama 3.3 70B model — delivering response speeds dramatically faster than traditional GPU-based AI, while maintaining the deepest contextual intelligence available today.</p>
+        <h2>What NovaMind AI Can Do</h2>
         <ul>
-          <li><strong>Students (K-12 & University):</strong> Get instant tutoring, essay feedback, concept explanations, and exam preparation across every subject.</li>
-          <li><strong>Developers & Engineers:</strong> Generate code, debug errors, design system architecture, and review pull requests in seconds.</li>
-          <li><strong>Business Professionals:</strong> Draft business strategies, create market analyses, write professional communications, and develop pitch decks.</li>
-          <li><strong>Content Creators:</strong> Produce SEO-optimized articles, social media copy, scripts, and creative writing with AI guidance.</li>
+          <li><strong>Students (K-12 & University):</strong> Instant tutoring, essay feedback, concept explanations, and exam preparation across every subject.</li>
+          <li><strong>Developers & Engineers:</strong> Generate production-ready code, debug errors, design system architecture, and review code across any language.</li>
+          <li><strong>Business Professionals:</strong> Draft strategies, create market analyses, write investor memos, and develop complete pitch decks.</li>
+          <li><strong>Content & Social Media Creators:</strong> SEO-optimized articles, viral social content, scripts, brand voice, and growth frameworks.</li>
         </ul>
         <h2>About CreativeStack</h2>
-        <p>CreativeStack is a technology product studio dedicated to building intelligent tools that solve real-world problems. NovaMind AI is our flagship product, combining beautiful design with raw computational power.</p>
-        <p>For inquiries, reach us at: <a href="mailto:hello@creativestack.ai">hello@creativestack.ai</a></p>
+        <p>CreativeStack is a technology product studio dedicated to building intelligent tools that solve real-world problems. NovaMind AI is our flagship product — combining beautiful, accessible design with raw frontier AI power.</p>
+        <p>Contact: <a href="mailto:hello@creativestack.ai">hello@creativestack.ai</a></p>
       </div>
     </section>
 
-    <!-- ======= PAGE: PRIVACY ======= -->
+    <!-- ── PAGE: PRIVACY ── -->
     <section class="page page-content" id="page-privacy" aria-label="Privacy Policy">
       <div class="content-wrap">
+        <div class="content-badge">Legal</div>
         <h1>Privacy Policy</h1>
-        <p class="meta-info">Last Updated: June 1, 2025</p>
-        <p class="lead">CreativeStack ("we," "our," or "us") operates NovaMind AI. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.</p>
+        <p class="meta-tag">Last Updated: June 1, 2025</p>
+        <p class="lead">CreativeStack ("we," "our," or "us") operates NovaMind AI. This Privacy Policy explains how we collect, use, and safeguard your information.</p>
         <h2>1. Information We Collect</h2>
-        <p>We may collect the following categories of information:</p>
-        <ul>
-          <li><strong>Usage Data:</strong> Browser type, pages visited, time and date of visit, and time spent on pages.</li>
-          <li><strong>Prompt Data:</strong> Text you submit to the AI is transmitted to our AI inference provider to generate a response. We do not permanently store conversation histories linked to your identity.</li>
-          <li><strong>Cookies:</strong> We use cookies to maintain session preferences. You may disable cookies in your browser settings.</li>
-        </ul>
+        <p>We may collect: <strong>Usage Data</strong> (browser type, pages visited, time on site); <strong>Prompt Data</strong> (text submitted to the AI, transmitted to our inference provider for processing); and <strong>Cookies</strong> for session preferences.</p>
         <h2>2. How We Use Your Information</h2>
-        <p>We use collected information to: operate and improve the Service; monitor usage analytics; detect and prevent fraudulent or abusive activity; and comply with legal obligations.</p>
-        <h2>3. Third-Party Services</h2>
-        <p>NovaMind AI uses Groq's API for AI inference. Groq's privacy policy governs data processing on their infrastructure. We may also use Google Analytics for aggregated, anonymized usage statistics. This site may display Google AdSense advertisements; Google's advertising policies apply to those ad units.</p>
-        <h2>4. Data Retention</h2>
-        <p>We do not retain your conversation data beyond the active session. Anonymized, aggregated analytics data may be retained for up to 12 months.</p>
-        <h2>5. Your Rights</h2>
-        <p>Depending on your jurisdiction, you may have the right to access, correct, or delete personal data we hold. Contact us at <a href="mailto:privacy@creativestack.ai">privacy@creativestack.ai</a> to exercise these rights.</p>
-        <h2>6. Children's Privacy</h2>
-        <p>NovaMind AI is not directed to children under 13. We do not knowingly collect information from children under 13. If you believe a child has provided us personal information, please contact us immediately.</p>
+        <p>We use collected information to: operate and improve the Service; monitor aggregated usage analytics; detect and prevent abusive activity; and comply with legal obligations.</p>
+        <h2>3. Chat History & LocalStorage</h2>
+        <p>Chat histories are stored exclusively in your browser's LocalStorage. We do not transmit or retain your conversation history on our servers. Clearing your browser data will permanently delete all saved chats.</p>
+        <h2>4. Third-Party Services</h2>
+        <p>NovaMind AI uses Groq's API for AI inference. Groq's privacy policy governs data processing on their infrastructure. This site may display Google AdSense advertisements; Google's advertising policies apply to those ad units.</p>
+        <h2>5. Children's Privacy</h2>
+        <p>NovaMind AI is not directed to children under 13. We do not knowingly collect personal information from children under 13.</p>
+        <h2>6. Your Rights</h2>
+        <p>You may request access, correction, or deletion of any personal data. Contact: <a href="mailto:privacy@creativestack.ai">privacy@creativestack.ai</a></p>
         <h2>7. Changes to This Policy</h2>
-        <p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated revision date. Continued use of the Service after changes constitutes acceptance.</p>
-        <h2>8. Contact Us</h2>
-        <p>For privacy-related questions: <a href="mailto:privacy@creativestack.ai">privacy@creativestack.ai</a></p>
+        <p>Changes will be posted on this page with an updated revision date. Continued use constitutes acceptance.</p>
       </div>
     </section>
 
-    <!-- ======= PAGE: TERMS ======= -->
+    <!-- ── PAGE: TERMS ── -->
     <section class="page page-content" id="page-terms" aria-label="Terms of Service">
       <div class="content-wrap">
+        <div class="content-badge">Legal</div>
         <h1>Terms of Service</h1>
-        <p class="meta-info">Last Updated: June 1, 2025</p>
-        <p class="lead">By accessing or using NovaMind AI, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+        <p class="meta-tag">Last Updated: June 1, 2025</p>
+        <p class="lead">By accessing NovaMind AI, you agree to these Terms of Service. Please read them carefully before using the Service.</p>
         <h2>1. Acceptance of Terms</h2>
-        <p>By using NovaMind AI, operated by CreativeStack, you confirm that you are at least 13 years of age and agree to comply with these Terms. If you do not agree, you may not use the Service.</p>
+        <p>By using NovaMind AI, operated by CreativeStack, you confirm you are at least 13 years of age and agree to comply with these Terms.</p>
         <h2>2. Description of Service</h2>
-        <p>NovaMind AI provides an AI-powered conversational assistant accessible via our web interface. The Service is provided "as is" and may be updated, modified, or discontinued at any time without prior notice.</p>
+        <p>NovaMind AI provides an AI-powered conversational assistant via a web interface. The Service is provided "as is" and may be updated or modified without prior notice.</p>
         <h2>3. Acceptable Use</h2>
-        <p>You agree NOT to use NovaMind AI to: generate illegal, harmful, defamatory, or harassing content; attempt to extract sensitive personal data; circumvent, disable, or interfere with security features; use the Service for commercial scraping or automated abuse; or violate any applicable local, national, or international law.</p>
+        <p>You agree NOT to use NovaMind AI to: generate illegal, harmful, or harassing content; attempt automated abuse or scraping; circumvent security features; or violate any applicable law.</p>
         <h2>4. Intellectual Property</h2>
-        <p>All trademarks, logos, and service marks displayed are the property of CreativeStack or their respective owners. AI-generated content produced through NovaMind AI may be used by you for personal and commercial purposes, subject to the underlying model provider's terms.</p>
+        <p>All trademarks and logos are the property of CreativeStack or respective owners. AI-generated content may be used for personal and commercial purposes subject to underlying model provider terms.</p>
         <h2>5. Disclaimer of Warranties</h2>
-        <p>NovaMind AI is provided without warranties of any kind, express or implied. We do not guarantee the accuracy, completeness, or reliability of AI-generated responses. Always verify critical information with authoritative sources.</p>
+        <p>NovaMind AI is provided without warranties of any kind. AI-generated responses may be inaccurate. Always verify critical information with authoritative sources.</p>
         <h2>6. Limitation of Liability</h2>
-        <p>To the fullest extent permitted by law, CreativeStack shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use the Service.</p>
-        <h2>7. Changes to Terms</h2>
-        <p>We reserve the right to modify these Terms at any time. Continued use of the Service following any changes constitutes acceptance of the revised Terms.</p>
-        <h2>8. Governing Law</h2>
-        <p>These Terms shall be governed by and interpreted in accordance with applicable laws, without regard to conflict of law provisions.</p>
-        <h2>9. Contact</h2>
-        <p>For legal inquiries: <a href="mailto:legal@creativestack.ai">legal@creativestack.ai</a></p>
+        <p>To the fullest extent permitted by law, CreativeStack shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.</p>
+        <h2>7. Contact</h2>
+        <p>Legal inquiries: <a href="mailto:legal@creativestack.ai">legal@creativestack.ai</a></p>
       </div>
     </section>
 
-    <!-- ===== PROMPT INPUT ===== -->
-    <footer class="prompt-bar" role="contentinfo" aria-label="Message input">
+    <!-- ── PROMPT BAR (always visible on chat page) ── -->
+    <div class="prompt-bar" id="promptBar">
       <div class="prompt-inner">
-        <div class="prompt-box" id="promptBox">
+        <div class="prompt-shell" id="promptShell">
           <textarea
             id="userInput"
-            class="prompt-textarea"
+            class="prompt-ta"
             placeholder="Ask NovaMind AI anything…"
             rows="1"
             aria-label="Your message"
             autocomplete="off"
             spellcheck="true"
           ></textarea>
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Send message">
-            <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
-              <path d="M15.5 9L2.5 2l3 7-3 7 13-7z" fill="currentColor"/>
-            </svg>
-          </button>
+          <div class="prompt-actions">
+            <span class="model-pill" aria-label="Active model">llama-3.3-70b</span>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Send message" title="Send (Enter)">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M14 8L1.5 1.5l2.5 6.5-2.5 6.5L14 8z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        <p class="prompt-disclaimer">NovaMind AI can make mistakes. Verify important information.</p>
+        <p class="prompt-note">NovaMind AI may make mistakes. Verify important information independently.</p>
       </div>
-    </footer>
+    </div>
 
   </main>
 
