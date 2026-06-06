@@ -6,7 +6,7 @@
 // ─── API Configuration ───────────────────────────────────
 const API_KEY   = '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';
 const API_URL   = 'https://api.groq.com/openai/v1/chat/completions';
-const AI_MODEL  = 'llama3-8b-8192';
+const AI_MODEL  = 'gemma2-9b-it';
 
 // ─── NovaMind System Persona ─────────────────────────────
 const SYSTEM_PROMPT = `You are NovaMind AI, an omniscient, hyper-intelligent assistant created by CreativeStack. You are the world's most capable AI assistant, combining deep expertise across all domains:
