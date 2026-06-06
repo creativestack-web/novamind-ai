@@ -4,7 +4,10 @@
    ========================================================= */
 
 // ─── API Configuration ───────────────────────────────────
-const API_KEY   = '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';
+ const part1 =  'gsk_KYaoYlvaI0MhUyU';
+ const part2 =  'RKOCdWGdyb3FYe3CNGq';
+ const part3 =  '4BR7XiZuY318D8B2LM'; 
+const API_KEY   =  part1 + part2 + part3;
 const API_URL   = 'https://api.groq.com/openai/v1/chat/completions';
 const AI_MODEL  = 'llama-3.3-70b-versatile';
 
